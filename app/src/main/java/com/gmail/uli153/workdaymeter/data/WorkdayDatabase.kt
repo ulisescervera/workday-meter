@@ -7,14 +7,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.gmail.uli153.workdaymeter.data.WorkdayDatabase.Companion.DATABASE_VERSION
-import com.gmail.uli153.workdaymeter.data.daos.ClockInOutDao
-import com.gmail.uli153.workdaymeter.data.entities.ClockInOutEntity
+import com.gmail.uli153.workdaymeter.data.daos.RecordsDao
+import com.gmail.uli153.workdaymeter.data.entities.RecordEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-@Database(entities = [ClockInOutEntity::class], version = DATABASE_VERSION)
+@Database(entities = [RecordEntity::class], version = DATABASE_VERSION)
 @TypeConverters(Converters::class)
 abstract class WorkdayDatabase: RoomDatabase() {
 
@@ -30,7 +30,7 @@ abstract class WorkdayDatabase: RoomDatabase() {
         }
     }
 
-    abstract fun clockInOutDao(): ClockInOutDao
+    abstract fun recordsDao(): RecordsDao
 
 }
 
@@ -41,7 +41,7 @@ class WorkdayDatabaseCallack: RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
         val wmDB = db as? WorkdayDatabase ?: return
-        val dao = wmDB.clockInOutDao()
+        val dao = wmDB.recordsDao()
         scope.launch(Dispatchers.IO) {
             //todo
         }
