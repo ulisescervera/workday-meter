@@ -2,12 +2,13 @@ package com.gmail.uli153.workdaymeter.data
 
 import androidx.room.TypeConverter
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
+import com.gmail.uli153.workdaymeter.utils.Formatters
 import java.text.SimpleDateFormat
 import java.util.*
 
 class Converters {
 
-    val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.getDefault())
+    val dateFormatter = Formatters.DateTimeFormatter
 
     @TypeConverter
     fun toDate(timestamp: String): Date {

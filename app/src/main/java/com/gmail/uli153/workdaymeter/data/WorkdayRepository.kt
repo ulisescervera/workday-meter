@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 interface WorkdayRepository {
     fun getStateFlow(): Flow<RecordEntity>
     fun getRecords(): Flow<List<RecordEntity>>
+    fun getTodayRecords(): Flow<List<RecordEntity>>
     suspend fun getState(): RecordEntity
     suspend fun insert(record: RecordEntity)
     suspend fun delete(record: RecordEntity)
