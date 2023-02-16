@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.gmail.uli153.workdaymeter.ui.screens.MainScreen
 import com.gmail.uli153.workdaymeter.ui.theme.WorkdayMeterTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,23 +19,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             WorkdayMeterTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    Greeting("Android")
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainScreen()
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
 @Preview(showBackground = true)
 @Composable
-fun DefaultPreview() {
-    WorkdayMeterTheme {
-        Greeting("Android")
-    }
+fun MainScreenPreview() {
+    MainScreen()
 }

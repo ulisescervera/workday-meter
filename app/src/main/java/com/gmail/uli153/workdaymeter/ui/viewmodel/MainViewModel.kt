@@ -27,16 +27,16 @@ class MainViewModel(
         .transformLatest<List<Record>, Data<List<Record>>> { Data.Success(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Data.Loading)
 
-    val todayRecords: StateFlow<List<Record>> = flow<List<Record>> {
-        records.collectLatest { data ->
-            when(data) {
-                is Data.Loading -> emit(emptyList())
-                is Data.Success -> {
-                    val today = data.data.filter {  }
-                }
-            }
-        }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+//    val todayRecords: StateFlow<List<Record>> = flow<List<Record>> {
+//        records.collectLatest { data ->
+//            when(data) {
+//                is Data.Loading -> emit(emptyList())
+//                is Data.Success -> {
+//                    val today = data.data.filter {  }
+//                }
+//            }
+//        }
+//    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun toggleState() {
         viewModelScope.launch(Dispatchers.IO) {
