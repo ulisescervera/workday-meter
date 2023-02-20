@@ -7,6 +7,7 @@ import com.gmail.uli153.workdaymeter.domain.Data
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.State
 import com.gmail.uli153.workdaymeter.domain.use_cases.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
+@HiltViewModel
 class MainViewModel(
     private val recordUseCase: RecordUseCases
 ) : ViewModel() {

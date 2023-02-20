@@ -1,6 +1,5 @@
-package com.gmail.uli153.workdaymeter.ui.theme
+package com.gmail.uli153.workdaymeter.ui.views
 
-import androidx.compose.foundation.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -10,6 +9,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.gmail.uli153.workdaymeter.navigation.NavigationItem
+import com.gmail.uli153.workdaymeter.ui.theme.disabled
 
 @Composable
 fun BottomBar(
