@@ -3,7 +3,6 @@ package com.gmail.uli153.workdaymeter.data
 import androidx.room.TypeConverter
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
 import com.gmail.uli153.workdaymeter.utils.Formatters
-import java.text.SimpleDateFormat
 import java.util.*
 
 class Converters {

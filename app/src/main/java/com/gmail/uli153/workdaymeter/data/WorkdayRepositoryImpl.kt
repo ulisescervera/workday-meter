@@ -5,23 +5,24 @@ import com.gmail.uli153.workdaymeter.data.entities.RecordEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import java.util.*
+import javax.inject.Inject
 
-class WorkdayRepositoryImpl(
+class WorkdayRepositoryImpl @Inject constructor(
     private val db: WorkdayDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): WorkdayRepository {
 
     override fun getStateFlow(): Flow<RecordEntity> {
-        return flow {
+        return channelFlow {
             db.recordsDao().getStateFlow().collectLatest {
                 if (it.isEmpty()) {
-                    emit(RecordEntity(Date(), ClockState.ClockOut))
+                    send(RecordEntity(Date(), ClockState.ClockOut))
                 } else {
-                    emit(it[0])
+                    send(it[0])
                 }
             }
         }.flowOn(dispatcher)

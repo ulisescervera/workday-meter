@@ -1,6 +1,6 @@
 package com.gmail.uli153.workdaymeter.domain.models
 
-import java.util.Date
+import java.util.*
 
 data class Record(
     val date: Date,

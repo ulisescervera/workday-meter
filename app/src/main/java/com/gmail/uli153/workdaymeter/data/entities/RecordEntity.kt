@@ -3,7 +3,7 @@ package com.gmail.uli153.workdaymeter.data.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.util.*
 
 @Entity(tableName = "records")
 data class RecordEntity(

@@ -1,33 +1,31 @@
 package com.gmail.uli153.workdaymeter.ui.viewmodel
 
-import android.icu.text.Collator.ReorderCodes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gmail.uli153.workdaymeter.domain.Data
+import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.Record
-import com.gmail.uli153.workdaymeter.domain.models.State
-import com.gmail.uli153.workdaymeter.domain.use_cases.*
+import com.gmail.uli153.workdaymeter.domain.use_cases.RecordUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
-import java.util.*
-import kotlin.coroutines.coroutineContext
+import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel(
+class MainViewModel @Inject constructor(
     private val recordUseCase: RecordUseCases
 ) : ViewModel() {
 
-    val state: StateFlow<Data<Record>> = recordUseCase.getStateUseCase()
-        .transformLatest<Record, Data<Record>> { Data.Success(it) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, Data.Loading)
+    val state: StateFlow<UIState<Record>> = recordUseCase.getStateUseCase()
+        .transformLatest<Record, UIState<Record>> { UIState.Success(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, UIState.Loading)
 
-    val records: StateFlow<Data<List<Record>>> = recordUseCase.getRecordsUseCase()
-        .transformLatest<List<Record>, Data<List<Record>>> { Data.Success(it) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, Data.Loading)
+    val records: StateFlow<UIState<List<Record>>> = recordUseCase.getRecordsUseCase()
+        .transformLatest<List<Record>, UIState<List<Record>>> { UIState.Success(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, UIState.Loading)
 
 //    val todayRecords: StateFlow<List<Record>> = flow<List<Record>> {
 //        records.collectLatest { data ->

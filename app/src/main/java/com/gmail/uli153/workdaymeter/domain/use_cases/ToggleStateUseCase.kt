@@ -3,7 +3,7 @@ package com.gmail.uli153.workdaymeter.domain.use_cases
 import com.gmail.uli153.workdaymeter.data.WorkdayRepository
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
 import com.gmail.uli153.workdaymeter.data.entities.RecordEntity
-import java.util.Date
+import java.util.*
 
 class ToggleStateUseCase(private val repository: WorkdayRepository) {
 
