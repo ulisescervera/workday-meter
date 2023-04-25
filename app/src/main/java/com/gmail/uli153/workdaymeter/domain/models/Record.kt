@@ -4,9 +4,9 @@ import java.util.*
 
 data class Record(
     val date: Date,
-    val state: State
+    val state: MeterState
 )
 
-enum class State {
+enum class MeterState {
     StateIn, StateOut
 }

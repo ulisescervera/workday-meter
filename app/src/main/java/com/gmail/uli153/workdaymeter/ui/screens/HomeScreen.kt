@@ -1,76 +1,112 @@
 package com.gmail.uli153.workdaymeter.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberAsyncImagePainter
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
-import com.gmail.uli153.workdaymeter.domain.models.State
+import com.gmail.uli153.workdaymeter.domain.models.Record
+import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 enum class ButtonState {
     In, Out, Disabled
 }
 
 @Composable
-fun HomeScreen(mainViewModel: MainViewModel) {
-    val state: ButtonState = when (val a = mainViewModel.state.collectAsState().value) {
-        is UIState.Success -> when (a.data.state) {
-            State.StateIn -> ButtonState.In
-            State.StateOut -> ButtonState.Out
+fun HomeScreen(state: State<UIState<Record>>, toggleState: () -> Unit) {
+    val buttonState: ButtonState = when (val value = state.value) {
+        is UIState.Success -> when (value.data.state) {
+            MeterState.StateIn -> ButtonState.In
+            MeterState.StateOut -> ButtonState.Out
         }
         else -> ButtonState.Disabled
     }
-    ConstraintLayout(modifier = Modifier
-        .background(Color.Blue)
+    val icon: Int
+    val color: Color
+    val alpha: Float
+    val time: MutableState<String> = remember { mutableStateOf("") }
+    var timer: Timer? = null
+    when (buttonState) {
+        ButtonState.In -> {
+            icon = R.drawable.ic_clock_out
+            color = MaterialTheme.colorScheme.primary
+            alpha = 1f
+            timer = fixedRateTimer(daemon = true, period = 1000L) {
+                time.value = when(val record = state.value) {
+                    is UIState.Loading -> "00:00"
+                    is UIState.Success -> {
+                        val diff = (Date().time - record.data.date.time) / 1000
+                        "$diff"
+                    }
+                }
+            }
+        }
+        ButtonState.Out -> {
+            icon = R.drawable.ic_clock_in
+            color = MaterialTheme.colorScheme.secondary
+            alpha = 1f
+            timer?.cancel()
+            timer?.purge()
+        }
+        ButtonState.Disabled -> {
+            icon = R.drawable.ic_clock_in
+            color = MaterialTheme.colorScheme.error
+            alpha = 1f
+            timer?.cancel()
+            timer?.purge()
+        }
+    }
+    Box(modifier = Modifier
+        .background(MaterialTheme.colorScheme.background)
+        .padding(horizontal = 20.dp)
         .fillMaxSize()
     ) {
-        val button = createRef()
-        StateButton(
-            state,
-            modifier = Modifier
-                .constrainAs(button) {
-                    start.linkTo(parent.start, 20.dp)
-                    top.linkTo(parent.top)
-                    end.linkTo(parent.end, 20.dp)
-                    bottom.linkTo(parent.bottom)
-                    width = Dimension.fillToConstraints
-                    height = Dimension.fillToConstraints
-                }
-                .aspectRatio(1f)
-        ) { mainViewModel.toggleState() }
+        Box(modifier = Modifier
+            .padding(10.dp)
+            .fillMaxSize()) {
+            Button(
+                onClick = toggleState,
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .fillMaxSize(1f)
+            ) {
+                Text(text = time)
+                Icon(
+                    painter = rememberAsyncImagePainter(icon),
+                    contentDescription = "",
+                    tint = color,
+                    modifier = Modifier
+                        .alpha(alpha)
+                        .fillMaxSize(1f)
+                )
+            }
+        }
     }
 }
 
+@Preview
 @Composable
-fun StateButton(state: ButtonState, modifier: Modifier, onClick: () -> Unit) {
-    val color = when (state) {
-        ButtonState.In -> MaterialTheme.colorScheme.secondary
-        ButtonState.Out -> MaterialTheme.colorScheme.secondary
-        ButtonState.Disabled -> MaterialTheme.colorScheme.error
-    }
-    val alpha = when (state) {
-        ButtonState.In -> 1f
-        ButtonState.Out, ButtonState.Disabled -> 0.35f
-    }
-    Button(onClick = onClick) {
-        Icon(
-            painter = rememberAsyncImagePainter(R.drawable.ic_circle),
-            contentDescription = "",
-            tint = color,
-            modifier = Modifier.alpha(alpha)
-        )
-    }
+fun HomeScreen_Preview() {
+    val state : State<UIState<Record>> = remember { mutableStateOf(UIState.Loading) }
+    HomeScreen(state, {})
 }

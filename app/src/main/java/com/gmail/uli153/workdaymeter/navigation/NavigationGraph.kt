@@ -1,6 +1,7 @@
 package com.gmail.uli153.workdaymeter.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -15,9 +16,12 @@ fun NavigationGraph(
     navController: NavHostController,
     mainViewModel: MainViewModel = viewModel()
 ) {
+    val state = mainViewModel.state.collectAsState()
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
-            HomeScreen(mainViewModel)
+            HomeScreen(state, toggleState = {
+                mainViewModel.toggleState()
+            })
         }
 
         composable(NavigationItem.Charts.route) {
