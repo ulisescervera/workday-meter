@@ -17,9 +17,10 @@ fun NavigationGraph(
     mainViewModel: MainViewModel = viewModel()
 ) {
     val state = mainViewModel.state.collectAsState()
+    val time = mainViewModel.time.collectAsState()
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
-            HomeScreen(state, toggleState = {
+            HomeScreen(state, time, toggleState = {
                 mainViewModel.toggleState()
             })
         }

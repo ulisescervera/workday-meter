@@ -1,10 +1,13 @@
 package com.gmail.uli153.workdaymeter.ui.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.use_cases.RecordUseCases
+import com.gmail.uli153.workdaymeter.service.ChronometerService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -20,9 +23,13 @@ class MainViewModel @Inject constructor(
         .map<Record, UIState<Record>> { UIState.Success(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, UIState.Loading)
 
-    val records: StateFlow<UIState<List<Record>>> = recordUseCase.getRecordsUseCase()
-        .map<List<Record>, UIState<List<Record>>> { UIState.Success(it) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, UIState.Loading)
+    val time: StateFlow<Long> = ChronometerService.time
+        .asFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ChronometerService.time.value!!)
+
+//    val records: StateFlow<UIState<List<Record>>> = recordUseCase.getRecordsUseCase()
+//        .map<List<Record>, UIState<List<Record>>> { UIState.Success(it) }
+//        .stateIn(viewModelScope, SharingStarted.Eagerly, UIState.Loading)
 
 //    val todayRecords: StateFlow<List<Record>> = flow<List<Record>> {
 //        records.collectLatest { data ->

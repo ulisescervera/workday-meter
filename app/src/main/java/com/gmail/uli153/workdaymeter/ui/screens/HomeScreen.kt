@@ -25,6 +25,7 @@ import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
+import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
@@ -33,7 +34,7 @@ enum class ButtonState {
 }
 
 @Composable
-fun HomeScreen(state: State<UIState<Record>>, toggleState: () -> Unit) {
+fun HomeScreen(state: State<UIState<Record>>, time: State<Long>, toggleState: () -> Unit) {
     val buttonState: ButtonState = when (val value = state.value) {
         is UIState.Success -> when (value.data.state) {
             MeterState.StateIn -> ButtonState.In
@@ -44,36 +45,21 @@ fun HomeScreen(state: State<UIState<Record>>, toggleState: () -> Unit) {
     val icon: Int
     val color: Color
     val alpha: Float
-    val time: MutableState<String> = remember { mutableStateOf("") }
-    var timer: Timer? = null
     when (buttonState) {
         ButtonState.In -> {
             icon = R.drawable.ic_clock_out
             color = MaterialTheme.colorScheme.primary
             alpha = 1f
-            timer = fixedRateTimer(daemon = true, period = 1000L) {
-                time.value = when(val record = state.value) {
-                    is UIState.Loading -> "00:00"
-                    is UIState.Success -> {
-                        val diff = (Date().time - record.data.date.time) / 1000
-                        "$diff"
-                    }
-                }
-            }
         }
         ButtonState.Out -> {
             icon = R.drawable.ic_clock_in
             color = MaterialTheme.colorScheme.secondary
             alpha = 1f
-            timer?.cancel()
-            timer?.purge()
         }
         ButtonState.Disabled -> {
             icon = R.drawable.ic_clock_in
             color = MaterialTheme.colorScheme.error
             alpha = 1f
-            timer?.cancel()
-            timer?.purge()
         }
     }
     Box(modifier = Modifier
@@ -90,7 +76,7 @@ fun HomeScreen(state: State<UIState<Record>>, toggleState: () -> Unit) {
                     .aspectRatio(1f)
                     .fillMaxSize(1f)
             ) {
-                Text(text = time)
+                Text(text = time.value.formattedTime)
                 Icon(
                     painter = rememberAsyncImagePainter(icon),
                     contentDescription = "",
@@ -108,5 +94,6 @@ fun HomeScreen(state: State<UIState<Record>>, toggleState: () -> Unit) {
 @Composable
 fun HomeScreen_Preview() {
     val state : State<UIState<Record>> = remember { mutableStateOf(UIState.Loading) }
-    HomeScreen(state, {})
+    val time : State<Long> = remember { mutableStateOf(0L) }
+    HomeScreen(state, time, {})
 }
