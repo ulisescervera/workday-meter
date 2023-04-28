@@ -7,6 +7,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -22,6 +24,7 @@ import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.use_cases.GetStateUseCase
 import com.gmail.uli153.workdaymeter.domain.use_cases.ToggleStateUseCase
+import com.gmail.uli153.workdaymeter.ui.widget.StateWidgetProvider
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -38,6 +41,9 @@ class ChronometerService: LifecycleService() {
         private val _time: MutableLiveData<Long> = MutableLiveData(0L)
         val time: LiveData<Long> = _time
 
+        val intentFlags = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+        const val requestCode = 0
+
         private const val NOTIFICATION_ID = 1
         private const val NOTIFICATION_CHANNEL_ID = "chronometer_cannel"
         private const val NOTIFICATION_CHANNEL_NAME = "Chronometer"
@@ -48,17 +54,15 @@ class ChronometerService: LifecycleService() {
     @Inject lateinit var toggleStateUseCase: ToggleStateUseCase
     @Inject lateinit var getStateUseCase: GetStateUseCase
 
-    private val flags = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-
     private val mainPendingIntent: PendingIntent by lazy {
         val intent = Intent(applicationContext, MainActivity::class.java)
-        PendingIntent.getActivity(applicationContext, 0, intent, flags)
+        PendingIntent.getActivity(applicationContext, requestCode, intent, intentFlags)
     }
 
     private val togglePendingIntent: PendingIntent by lazy {
         val intent = Intent(applicationContext, ChronometerService::class.java)
         intent.action = ACTION_TOGGLE_STATE
-        PendingIntent.getService(applicationContext, 0, intent, flags)
+        PendingIntent.getService(applicationContext, requestCode, intent, intentFlags)
     }
 
     private val notificationBuilder: NotificationCompat.Builder by lazy {
@@ -90,6 +94,7 @@ class ChronometerService: LifecycleService() {
         }
         CoroutineScope(Dispatchers.Main).launch {
             state.collectLatest { state ->
+                applicationContext.updateWidget()
                 when(state) {
                     is UIState.Loading -> {
                         stopTimer()
@@ -107,6 +112,10 @@ class ChronometerService: LifecycleService() {
                         }
                     }
                 }
+
+                val widgetManager = AppWidgetManager.getInstance(applicationContext)
+                val component = ComponentName(applicationContext.packageName, StateWidgetProvider::class.java.name)
+                widgetManager.notifyAppWidgetViewDataChanged(widgetManager.getAppWidgetIds(component), R.id.btn_toggle)
             }
         }
     }
@@ -146,15 +155,14 @@ class ChronometerService: LifecycleService() {
             togglePendingIntent
         )
         timerJob?.cancel()
-        lastRecordTime?.let { lastTime ->
-            val current = Date().time
-            val diff = current - lastTime
-            _time.value = diff
-        }
+        val lastTime = lastRecordTime ?: return
+
+        val current = Date().time
+        val diff = current - lastTime
+        _time.value = diff
         timerJob = CoroutineScope(Dispatchers.Main).launch {
             while (true) {
                 delay(UPDATE_NOTIFICATION_DELAY)
-                val lastTime = lastRecordTime ?: continue
                 val current = Date().time
                 val diff = current - lastTime
                 if (!isActive) return@launch
@@ -184,4 +192,16 @@ class ChronometerService: LifecycleService() {
         )
         notificationManager.createNotificationChannel(channel)
     }
+}
+
+fun Context.updateWidget() {
+    val widgetUpdateIntent = Intent(this, StateWidgetProvider::class.java).apply {
+        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        putExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_IDS,
+            AppWidgetManager.getInstance(this@updateWidget)
+                .getAppWidgetIds(ComponentName(this@updateWidget, StateWidgetProvider::class.java))
+        )
+    }
+    sendBroadcast(widgetUpdateIntent)
 }
