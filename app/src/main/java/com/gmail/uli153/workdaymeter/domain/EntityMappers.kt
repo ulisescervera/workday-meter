@@ -2,8 +2,8 @@ package com.gmail.uli153.workdaymeter.domain
 
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
 import com.gmail.uli153.workdaymeter.data.entities.RecordEntity
-import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
+import com.gmail.uli153.workdaymeter.domain.models.Record
 
 fun RecordEntity.toModel(): Record {
     return Record(this.timestamp, when(this.state) {

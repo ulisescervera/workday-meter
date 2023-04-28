@@ -3,17 +3,13 @@
  */
 package com.gmail.uli153.workdaymeter.service
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Binder
 import android.os.Build
-import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -21,20 +17,23 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gmail.uli153.workdaymeter.MainActivity
 import com.gmail.uli153.workdaymeter.R
+import com.gmail.uli153.workdaymeter.domain.UIState
+import com.gmail.uli153.workdaymeter.domain.models.MeterState
+import com.gmail.uli153.workdaymeter.domain.models.Record
+import com.gmail.uli153.workdaymeter.domain.use_cases.GetStateUseCase
+import com.gmail.uli153.workdaymeter.domain.use_cases.ToggleStateUseCase
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import java.util.*
-import kotlin.coroutines.CoroutineContext
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ChronometerService: LifecycleService() {
 
     companion object {
-        const val ACTION_GET_IN = "ACTION_GET_IN"
-        const val ACTION_GET_OUT = "ACTION_GET_OUT"
+        const val ACTION_TOGGLE_STATE = "ACTION_TOGGLE_STATE"
 
         private val _time: MutableLiveData<Long> = MutableLiveData(0L)
         val time: LiveData<Long> = _time
@@ -46,64 +45,112 @@ class ChronometerService: LifecycleService() {
         private const val UPDATE_NOTIFICATION_DELAY = 1000L
     }
 
-    private val pendingIntent: PendingIntent = PendingIntent.getActivity(
-        applicationContext,
-        0,
-        Intent(applicationContext, MainActivity::class.java),
-        if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-    )
+    @Inject lateinit var toggleStateUseCase: ToggleStateUseCase
+    @Inject lateinit var getStateUseCase: GetStateUseCase
 
-    private val notificationBuilder: NotificationCompat.Builder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-        .setAutoCancel(false)
-        .setOngoing(true)
-        .setSmallIcon(R.drawable.ic_notification)
-        .setContentTitle("Running App")
-        .setContentText("00:00:00")
-        .setContentIntent(pendingIntent)
+    private val flags = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
 
-    private var firstRun = true
+    private val mainPendingIntent: PendingIntent by lazy {
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        PendingIntent.getActivity(applicationContext, 0, intent, flags)
+    }
+
+    private val togglePendingIntent: PendingIntent by lazy {
+        val intent = Intent(applicationContext, ChronometerService::class.java)
+        intent.action = ACTION_TOGGLE_STATE
+        PendingIntent.getService(applicationContext, 0, intent, flags)
+    }
+
+    private val notificationBuilder: NotificationCompat.Builder by lazy {
+        NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentIntent(mainPendingIntent)
+            .setContentTitle(applicationContext.getString(R.string.start_tracking_time))
+            .setContentText(0L.formattedTime)
+    }
+
+    private val state: StateFlow<UIState<Record>> by lazy {
+        getStateUseCase()
+            .map<Record, UIState<Record>> { UIState.Success(it) }
+            .stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, UIState.Loading)
+    }
+
     private var lastRecordTime: Long? = null
     private var timerJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        startForegroundService(notificationManager)
         time.observe(this) {
             val notification = notificationBuilder.setContentText(it.formattedTime)
             notificationManager.notify(NOTIFICATION_ID, notification.build())
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            state.collectLatest { state ->
+                when(state) {
+                    is UIState.Loading -> {
+                        stopTimer()
+                        notificationBuilder.clearActions()
+                    }
+                    is UIState.Success -> {
+                        when(state.data.state) {
+                            MeterState.StateIn -> {
+                                lastRecordTime = state.data.date.time
+                                startTimer()
+                            }
+                            MeterState.StateOut -> {
+                                stopTimer()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action) {
-            ACTION_GET_IN -> {
-                if (firstRun) {
-                    firstRun = false
-                    startForegroundService()
-                } else {
-                    startTimer()
+            ACTION_TOGGLE_STATE -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    toggleStateUseCase()
                 }
             }
-            ACTION_GET_OUT -> {
-                stopTimer()
-            }
-            null -> Unit
+            else -> Unit
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun startForegroundService() {
+    override fun onDestroy() {
+        super.onDestroy()
+        stopTimer()
+    }
+
+    private fun startForegroundService(manager: NotificationManager) {
         startTimer()
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(notificationManager)
+            createNotificationChannel(manager)
         }
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
     }
 
     private fun startTimer() {
+        notificationBuilder.setContentTitle(applicationContext.getString(R.string.tracking_time))
+        notificationBuilder.clearActions()
+        notificationBuilder.addAction(
+            R.drawable.ic_clock_out,
+            applicationContext.getString(R.string.stop),
+            togglePendingIntent
+        )
         timerJob?.cancel()
+        lastRecordTime?.let { lastTime ->
+            val current = Date().time
+            val diff = current - lastTime
+            _time.value = diff
+        }
         timerJob = CoroutineScope(Dispatchers.Main).launch {
             while (true) {
                 delay(UPDATE_NOTIFICATION_DELAY)
@@ -117,6 +164,13 @@ class ChronometerService: LifecycleService() {
     }
 
     private fun stopTimer() {
+        notificationBuilder.setContentTitle(applicationContext.getString(R.string.start_tracking_time))
+        notificationBuilder.clearActions()
+        notificationBuilder.addAction(
+            R.drawable.ic_clock_in,
+            applicationContext.getString(R.string.start_tracking),
+            togglePendingIntent
+        )
         timerJob?.cancel()
         _time.value = 0L
     }
