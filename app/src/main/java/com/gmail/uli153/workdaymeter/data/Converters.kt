@@ -1,22 +1,25 @@
 package com.gmail.uli153.workdaymeter.data
 
+import android.util.Log
 import androidx.room.TypeConverter
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
 import com.gmail.uli153.workdaymeter.utils.Formatters
+import java.time.LocalDateTime
 import java.util.*
 
 class Converters {
 
-    val dateFormatter = Formatters.DateTimeFormatter
+    private val formatter = Formatters.dateTime
 
     @TypeConverter
-    fun toDate(timestamp: String): Date {
-        return dateFormatter.parse(timestamp)!!
+    fun toDate(timestamp: String): LocalDateTime {
+        Log.d("######", "Converting: $timestamp")
+        return LocalDateTime.from(formatter.parse(timestamp))
     }
 
     @TypeConverter
-    fun toTimestamp(date: Date): String {
-        return dateFormatter.format(date)
+    fun toTimestamp(date: LocalDateTime): String {
+        return formatter.format(date)
     }
 
     @TypeConverter

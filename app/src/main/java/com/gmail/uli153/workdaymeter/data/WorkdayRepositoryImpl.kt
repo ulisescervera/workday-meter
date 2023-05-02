@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -20,7 +21,7 @@ class WorkdayRepositoryImpl @Inject constructor(
         return channelFlow {
             db.recordsDao().getStateFlow().collectLatest {
                 if (it.isEmpty()) {
-                    send(RecordEntity(Date(), ClockState.ClockOut))
+                    send(RecordEntity(LocalDateTime.now(), ClockState.ClockOut))
                 } else {
                     send(it[0])
                 }
@@ -39,7 +40,7 @@ class WorkdayRepositoryImpl @Inject constructor(
     override suspend fun getState(): RecordEntity {
         return db.recordsDao().getState().let {
             if (it.isEmpty()) {
-                RecordEntity(Date(), ClockState.ClockOut)
+                RecordEntity(LocalDateTime.now(), ClockState.ClockOut)
             } else {
                 it[0]
             }

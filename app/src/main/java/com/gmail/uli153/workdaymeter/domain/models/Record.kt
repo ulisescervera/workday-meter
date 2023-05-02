@@ -1,9 +1,9 @@
 package com.gmail.uli153.workdaymeter.domain.models
 
-import java.util.*
+import java.time.LocalDateTime
 
 data class Record(
-    val date: Date,
+    val date: LocalDateTime,
     val state: MeterState
 )
 

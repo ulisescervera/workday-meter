@@ -12,6 +12,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -22,6 +23,7 @@ import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
+import com.gmail.uli153.workdaymeter.domain.toModel
 import com.gmail.uli153.workdaymeter.domain.use_cases.GetStateUseCase
 import com.gmail.uli153.workdaymeter.domain.use_cases.ToggleStateUseCase
 import com.gmail.uli153.workdaymeter.ui.widget.StateWidgetProvider
@@ -29,6 +31,10 @@ import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.Period
+import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.inject.Inject
 
@@ -81,7 +87,7 @@ class ChronometerService: LifecycleService() {
             .stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, UIState.Loading)
     }
 
-    private var lastRecordTime: Long? = null
+    private var lastRecordTime: LocalDateTime? = null
     private var timerJob: Job? = null
 
     override fun onCreate() {
@@ -94,7 +100,7 @@ class ChronometerService: LifecycleService() {
         }
         CoroutineScope(Dispatchers.Main).launch {
             state.collectLatest { state ->
-                applicationContext.updateWidget()
+                StateWidgetProvider.updateViews(applicationContext, AppWidgetManager.getInstance(applicationContext), state)
                 when(state) {
                     is UIState.Loading -> {
                         stopTimer()
@@ -103,7 +109,7 @@ class ChronometerService: LifecycleService() {
                     is UIState.Success -> {
                         when(state.data.state) {
                             MeterState.StateIn -> {
-                                lastRecordTime = state.data.date.time
+                                lastRecordTime = state.data.date
                                 startTimer()
                             }
                             MeterState.StateOut -> {
@@ -147,6 +153,7 @@ class ChronometerService: LifecycleService() {
     }
 
     private fun startTimer() {
+        Log.d("######", "startTimer")
         notificationBuilder.setContentTitle(applicationContext.getString(R.string.tracking_time))
         notificationBuilder.clearActions()
         notificationBuilder.addAction(
@@ -157,15 +164,19 @@ class ChronometerService: LifecycleService() {
         timerJob?.cancel()
         val lastTime = lastRecordTime ?: return
 
-        val current = Date().time
-        val diff = current - lastTime
+        val current = LocalDateTime.now()
+        val diff = ChronoUnit.MILLIS.between(lastTime, current)
         _time.value = diff
         timerJob = CoroutineScope(Dispatchers.Main).launch {
+            Log.d("######", "CoroutineScope(Dispatchers.Main).launch")
             while (true) {
                 delay(UPDATE_NOTIFICATION_DELAY)
-                val current = Date().time
-                val diff = current - lastTime
-                if (!isActive) return@launch
+                val current = LocalDateTime.now()
+                val diff = ChronoUnit.MILLIS.between(lastTime, current)
+                if (!isActive) {
+                    Log.d("######", "if (!isActive)")
+                    return@launch
+                }
                 _time.value = diff
             }
         }
@@ -179,6 +190,7 @@ class ChronometerService: LifecycleService() {
             applicationContext.getString(R.string.start_tracking),
             togglePendingIntent
         )
+        Log.d("######", "timerJob?.cancel()")
         timerJob?.cancel()
         _time.value = 0L
     }
@@ -192,16 +204,4 @@ class ChronometerService: LifecycleService() {
         )
         notificationManager.createNotificationChannel(channel)
     }
-}
-
-fun Context.updateWidget() {
-    val widgetUpdateIntent = Intent(this, StateWidgetProvider::class.java).apply {
-        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-        putExtra(
-            AppWidgetManager.EXTRA_APPWIDGET_IDS,
-            AppWidgetManager.getInstance(this@updateWidget)
-                .getAppWidgetIds(ComponentName(this@updateWidget, StateWidgetProvider::class.java))
-        )
-    }
-    sendBroadcast(widgetUpdateIntent)
 }
