@@ -27,15 +27,18 @@ class StateWidgetProvider: AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.btn_toggle, pendingIntent)
             when(state) {
                 is UIState.Loading -> {
-                    views.setImageViewResource(R.id.btn_toggle, R.drawable.ic_clock_out)
+                    views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_out)
+                    views.setTextViewText(R.id.btn_toggle, context.getString(R.string.out))
                 }
                 is UIState.Success -> {
                     when(state.data.state) {
                         MeterState.StateIn -> {
-                            views.setImageViewResource(R.id.btn_toggle, R.drawable.ic_clock_out)
+                            views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_out)
+                            views.setTextViewText(R.id.btn_toggle, context.getString(R.string.out))
                         }
                         MeterState.StateOut -> {
-                            views.setImageViewResource(R.id.btn_toggle, R.drawable.ic_clock_in)
+                            views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_in)
+                            views.setTextViewText(R.id.btn_toggle, context.getString(R.string.`in`))
                         }
                     }
                 }

@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <ImageButton
+    <ImageView
+        android:id="@+id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/btn_toggle"
-        android:background="@null"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_clock_in" />
+        android:scaleType="centerInside"
+        android:src="@drawable/bg_tv_widget_in" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/btn_toggle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:autoSizeMaxTextSize="30sp"
+        android:autoSizeMinTextSize="10sp"
+        android:elevation="10dp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:padding="10dp"
+        android:text="@string/in"
+        android:textAlignment="center"
+        android:textColor="#FFEEEEEE"
+        android:textSize="20sp" />
+
+</RelativeLayout>
