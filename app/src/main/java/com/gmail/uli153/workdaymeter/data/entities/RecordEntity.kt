@@ -3,12 +3,11 @@ package com.gmail.uli153.workdaymeter.data.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDateTime
 import java.util.*
 
 @Entity(tableName = "records")
 data class RecordEntity(
-    @PrimaryKey                 val timestamp: LocalDateTime,
+    @PrimaryKey                 val timestamp: Date,
     @ColumnInfo(name = "state") val state: ClockState
 )
 

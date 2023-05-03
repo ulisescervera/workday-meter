@@ -14,17 +14,7 @@ import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
-import com.gmail.uli153.workdaymeter.domain.use_cases.GetStateUseCase
 import com.gmail.uli153.workdaymeter.service.ChronometerService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class StateWidgetProvider: AppWidgetProvider() {
 

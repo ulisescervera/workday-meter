@@ -23,18 +23,14 @@ import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
-import com.gmail.uli153.workdaymeter.domain.toModel
 import com.gmail.uli153.workdaymeter.domain.use_cases.GetStateUseCase
 import com.gmail.uli153.workdaymeter.domain.use_cases.ToggleStateUseCase
 import com.gmail.uli153.workdaymeter.ui.widget.StateWidgetProvider
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
+import com.gmail.uli153.workdaymeter.utils.extensions.millisSince
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.Period
-import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.inject.Inject
 
@@ -87,7 +83,7 @@ class ChronometerService: LifecycleService() {
             .stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, UIState.Loading)
     }
 
-    private var lastRecordTime: LocalDateTime? = null
+    private var lastRecordTime: Date? = null
     private var timerJob: Job? = null
 
     override fun onCreate() {
@@ -153,7 +149,6 @@ class ChronometerService: LifecycleService() {
     }
 
     private fun startTimer() {
-        Log.d("######", "startTimer")
         notificationBuilder.setContentTitle(applicationContext.getString(R.string.tracking_time))
         notificationBuilder.clearActions()
         notificationBuilder.addAction(
@@ -164,17 +159,13 @@ class ChronometerService: LifecycleService() {
         timerJob?.cancel()
         val lastTime = lastRecordTime ?: return
 
-        val current = LocalDateTime.now()
-        val diff = ChronoUnit.MILLIS.between(lastTime, current)
+        val diff = Date().millisSince(lastTime)
         _time.value = diff
         timerJob = CoroutineScope(Dispatchers.Main).launch {
-            Log.d("######", "CoroutineScope(Dispatchers.Main).launch")
             while (true) {
                 delay(UPDATE_NOTIFICATION_DELAY)
-                val current = LocalDateTime.now()
-                val diff = ChronoUnit.MILLIS.between(lastTime, current)
+                val diff = Date().millisSince(lastTime)
                 if (!isActive) {
-                    Log.d("######", "if (!isActive)")
                     return@launch
                 }
                 _time.value = diff
@@ -190,7 +181,6 @@ class ChronometerService: LifecycleService() {
             applicationContext.getString(R.string.start_tracking),
             togglePendingIntent
         )
-        Log.d("######", "timerJob?.cancel()")
         timerJob?.cancel()
         _time.value = 0L
     }

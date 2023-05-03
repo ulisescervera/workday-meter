@@ -21,7 +21,7 @@ class WorkdayRepositoryImpl @Inject constructor(
         return channelFlow {
             db.recordsDao().getStateFlow().collectLatest {
                 if (it.isEmpty()) {
-                    send(RecordEntity(LocalDateTime.now(), ClockState.ClockOut))
+                    send(RecordEntity(Date(), ClockState.ClockOut))
                 } else {
                     send(it[0])
                 }
@@ -40,7 +40,7 @@ class WorkdayRepositoryImpl @Inject constructor(
     override suspend fun getState(): RecordEntity {
         return db.recordsDao().getState().let {
             if (it.isEmpty()) {
-                RecordEntity(LocalDateTime.now(), ClockState.ClockOut)
+                RecordEntity(Date(), ClockState.ClockOut)
             } else {
                 it[0]
             }
