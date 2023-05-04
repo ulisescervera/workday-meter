@@ -9,35 +9,44 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import android.widget.RemoteViews
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.service.ChronometerService
+import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 
 class StateWidgetProvider: AppWidgetProvider() {
 
     companion object {
-        fun updateViews(context: Context, manager: AppWidgetManager, state: UIState<Record>) {
+        fun updateViews(context: Context, manager: AppWidgetManager, state: UIState<Record>, formattedTime: String?) {
             val views = RemoteViews(context.packageName, R.layout.widget_home)
             val intent = Intent(context, ChronometerService::class.java)
             intent.action = ChronometerService.ACTION_TOGGLE_STATE
             val pendingIntent = PendingIntent.getService(context, ChronometerService.requestCode, intent, ChronometerService.intentFlags)
-            views.setOnClickPendingIntent(R.id.btn_toggle, pendingIntent)
+            views.setOnClickPendingIntent(R.id.background, pendingIntent)
             when(state) {
                 is UIState.Loading -> {
-                    views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_out)
+                    views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_in)
+                    views.setViewVisibility(R.id.label_time, View.GONE)
+                    views.setViewVisibility(R.id.btn_toggle, View.VISIBLE)
                     views.setTextViewText(R.id.btn_toggle, context.getString(R.string.out))
                 }
                 is UIState.Success -> {
                     when(state.data.state) {
                         MeterState.StateIn -> {
-                            views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_out)
+                            views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_in)
+                            views.setViewVisibility(R.id.label_time, View.VISIBLE)
+                            views.setTextViewText(R.id.label_time, formattedTime)
+                            views.setViewVisibility(R.id.btn_toggle, View.INVISIBLE)
                             views.setTextViewText(R.id.btn_toggle, context.getString(R.string.out))
                         }
                         MeterState.StateOut -> {
-                            views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_in)
+                            views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_out)
+                            views.setViewVisibility(R.id.label_time, View.GONE)
+                            views.setViewVisibility(R.id.btn_toggle, View.VISIBLE)
                             views.setTextViewText(R.id.btn_toggle, context.getString(R.string.`in`))
                         }
                     }

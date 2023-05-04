@@ -8,11 +8,9 @@ import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -39,17 +37,20 @@ class ChronometerService: LifecycleService() {
 
     companion object {
         const val ACTION_TOGGLE_STATE = "ACTION_TOGGLE_STATE"
+        const val requestCode = 0
 
         private val _time: MutableLiveData<Long> = MutableLiveData(0L)
         val time: LiveData<Long> = _time
 
-        val intentFlags = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-        const val requestCode = 0
+        val intentFlags = if (Build.VERSION.SDK_INT >= 23){
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
 
         private const val NOTIFICATION_ID = 1
         private const val NOTIFICATION_CHANNEL_ID = "chronometer_cannel"
         private const val NOTIFICATION_CHANNEL_NAME = "Chronometer"
-
         private const val UPDATE_NOTIFICATION_DELAY = 1000L
     }
 
@@ -85,22 +86,26 @@ class ChronometerService: LifecycleService() {
 
     private var lastRecordTime: Date? = null
     private var timerJob: Job? = null
+    private var currentState: UIState<Record> = UIState.Loading
 
     override fun onCreate() {
         super.onCreate()
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         startForegroundService(notificationManager)
         time.observe(this) {
-            val notification = notificationBuilder.setContentText(it.formattedTime)
+            val formattedTime = it.formattedTime
+            val notification = notificationBuilder.setContentText(formattedTime)
             notificationManager.notify(NOTIFICATION_ID, notification.build())
+            updateWidget(currentState, formattedTime)
         }
         CoroutineScope(Dispatchers.Main).launch {
             state.collectLatest { state ->
-                StateWidgetProvider.updateViews(applicationContext, AppWidgetManager.getInstance(applicationContext), state)
+                currentState = state
                 when(state) {
                     is UIState.Loading -> {
                         stopTimer()
                         notificationBuilder.clearActions()
+                        updateWidget(state, null)
                     }
                     is UIState.Success -> {
                         when(state.data.state) {
@@ -110,14 +115,11 @@ class ChronometerService: LifecycleService() {
                             }
                             MeterState.StateOut -> {
                                 stopTimer()
+                                updateWidget(state, null)
                             }
                         }
                     }
                 }
-
-                val widgetManager = AppWidgetManager.getInstance(applicationContext)
-                val component = ComponentName(applicationContext.packageName, StateWidgetProvider::class.java.name)
-                widgetManager.notifyAppWidgetViewDataChanged(widgetManager.getAppWidgetIds(component), R.id.btn_toggle)
             }
         }
     }
@@ -138,10 +140,14 @@ class ChronometerService: LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         stopTimer()
+        if (Build.VERSION.SDK_INT >= 24) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            stopForeground(true)
+        }
     }
 
     private fun startForegroundService(manager: NotificationManager) {
-        startTimer()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(manager)
         }
@@ -193,5 +199,14 @@ class ChronometerService: LifecycleService() {
             IMPORTANCE_LOW
         )
         notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun updateWidget(state: UIState<Record>, formattedTime: String?) {
+        StateWidgetProvider.updateViews(
+            applicationContext,
+            AppWidgetManager.getInstance(applicationContext),
+            state,
+            formattedTime
+        )
     }
 }
