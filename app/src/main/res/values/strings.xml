@@ -13,4 +13,6 @@
     <string name="in">IN</string>
     <string name="out">OUT</string>
 
+    <string name="waiting_clock_out">Waiting clock-out</string>
+
 </resources>
