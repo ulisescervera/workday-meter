@@ -8,4 +8,8 @@ import java.util.Date
 data class WorkingPeriod(
     val start: Date,
     val end: Date?
-)
+) {
+    val duration: Long? get() = if (end != null) {
+        end.time - start.time
+    } else null
+}
