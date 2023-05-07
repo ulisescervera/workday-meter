@@ -20,12 +20,15 @@ interface RecordsDao {
     @Query("SELECT * FROM records ORDER BY timestamp")
     fun getRecords(): Flow<List<RecordEntity>>
 
-    @Query("SELECT * FROM records WHERE date(timestamp) = date('now') ")
-    fun getTodayRecords(): Flow<List<RecordEntity>>
+    @Query("SELECT * FROM records WHERE timestamp BETWEEN :from AND :to ORDER BY datetime(timestamp)")
+    fun getRecordsInRange(from: String, to: String): Flow<List<RecordEntity>>
 
     @Insert(onConflict = REPLACE)
     suspend fun insert(record: RecordEntity)
 
     @Delete
     suspend fun delete(record: RecordEntity)
+
+    @Query("SELECT * FROM records WHERE timestamp BETWEEN :from AND :to ORDER BY datetime(timestamp)")
+    fun getTest(from: String, to: String): List<RecordEntity>
 }

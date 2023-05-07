@@ -16,7 +16,6 @@ import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.service.ChronometerService
-import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 
 class StateWidgetProvider: AppWidgetProvider() {
 

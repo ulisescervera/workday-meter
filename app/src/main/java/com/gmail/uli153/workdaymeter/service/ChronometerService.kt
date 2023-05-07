@@ -14,8 +14,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.gmail.uli153.workdaymeter.MainActivity
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
@@ -29,6 +27,7 @@ import com.gmail.uli153.workdaymeter.utils.extensions.millisSince
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.threeten.bp.OffsetDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -39,8 +38,8 @@ class ChronometerService: LifecycleService() {
         const val ACTION_TOGGLE_STATE = "ACTION_TOGGLE_STATE"
         const val requestCode = 0
 
-        private val _time: MutableLiveData<Long> = MutableLiveData(0L)
-        val time: LiveData<Long> = _time
+        private val _time: MutableStateFlow<Long> = MutableStateFlow(0L)
+        val time: StateFlow<Long> = _time
 
         val intentFlags = if (Build.VERSION.SDK_INT >= 23){
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -84,7 +83,7 @@ class ChronometerService: LifecycleService() {
             .stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, UIState.Loading)
     }
 
-    private var lastRecordTime: Date? = null
+    private var lastRecordTime: OffsetDateTime? = null
     private var timerJob: Job? = null
     private var currentState: UIState<Record> = UIState.Loading
 
@@ -92,12 +91,6 @@ class ChronometerService: LifecycleService() {
         super.onCreate()
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         startForegroundService(notificationManager)
-        time.observe(this) {
-            val formattedTime = it.formattedTime
-            val notification = notificationBuilder.setContentText(formattedTime)
-            notificationManager.notify(NOTIFICATION_ID, notification.build())
-            updateWidget(currentState, formattedTime)
-        }
         CoroutineScope(Dispatchers.Main).launch {
             state.collectLatest { state ->
                 currentState = state
@@ -120,6 +113,13 @@ class ChronometerService: LifecycleService() {
                         }
                     }
                 }
+            }
+
+            time.collectLatest {
+                val formattedTime = it.formattedTime
+                val notification = notificationBuilder.setContentText(formattedTime)
+                notificationManager.notify(NOTIFICATION_ID, notification.build())
+                updateWidget(currentState, formattedTime)
             }
         }
     }
@@ -165,12 +165,12 @@ class ChronometerService: LifecycleService() {
         timerJob?.cancel()
         val lastTime = lastRecordTime ?: return
 
-        val diff = Date().millisSince(lastTime)
+        val diff = OffsetDateTime.now().millisSince(lastTime)
         _time.value = diff
         timerJob = CoroutineScope(Dispatchers.Main).launch {
             while (true) {
                 delay(UPDATE_NOTIFICATION_DELAY)
-                val diff = Date().millisSince(lastTime)
+                val diff = OffsetDateTime.now().millisSince(lastTime)
                 if (!isActive) {
                     return@launch
                 }

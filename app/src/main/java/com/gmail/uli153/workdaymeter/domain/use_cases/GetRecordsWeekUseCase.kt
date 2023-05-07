@@ -9,11 +9,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.OffsetDateTime
 
-class GetTodayRecordsUseCase(private val repository: WorkdayRepository) {
+class GetRecordsWeekUseCase(private val repository: WorkdayRepository) {
 
     operator fun invoke(): Flow<List<Record>> {
-        val from = OffsetDateTime.now().firstSecond
-        val to = from.lastSecond
+        val from = OffsetDateTime.now()
+            .minusDays(OffsetDateTime.now().dayOfWeek.value - 1L)
+            .firstSecond
+        val to = from.plusDays(6).lastSecond
         return repository.getRecordsInRange(from, to).map { it.map { it.toModel() } }
     }
 }

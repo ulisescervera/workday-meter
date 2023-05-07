@@ -3,7 +3,7 @@
  */
 package com.gmail.uli153.workdaymeter.utils.extensions
 
-import java.util.*
+import java.util.Date
 
 fun Date.millisSince(date: Date): Long {
     return this.time - date.time

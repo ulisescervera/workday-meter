@@ -18,7 +18,8 @@ fun NavigationGraph(
 ) {
     val state = mainViewModel.state.collectAsState()
     val time = mainViewModel.time.collectAsState()
-    val workingPeriods = mainViewModel.workingPeriods.collectAsState()
+    val history = mainViewModel.history.collectAsState()
+    val historyFilter = mainViewModel.filter.collectAsState()
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
             HomeScreen(state, time, toggleState = {
@@ -31,7 +32,9 @@ fun NavigationGraph(
         }
 
         composable(NavigationItem.History.route) {
-            HistoryScreen(workingPeriods)
+            HistoryScreen(state, historyFilter, history, time, setFilter = {
+                mainViewModel.setHistoryFilter(it)
+            })
         }
     }
 }

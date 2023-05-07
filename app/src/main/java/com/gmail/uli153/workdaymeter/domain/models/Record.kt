@@ -1,9 +1,9 @@
 package com.gmail.uli153.workdaymeter.domain.models
 
-import java.util.*
+import org.threeten.bp.OffsetDateTime
 
 data class Record(
-    val date: Date,
+    val date: OffsetDateTime,
     val state: MeterState
 )
 

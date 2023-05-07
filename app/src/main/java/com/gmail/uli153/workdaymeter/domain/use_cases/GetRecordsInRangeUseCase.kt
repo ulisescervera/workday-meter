@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.OffsetDateTime
 
-class GetTodayRecordsUseCase(private val repository: WorkdayRepository) {
+class GetRecordsInRangeUseCase(private val repository: WorkdayRepository) {
 
-    operator fun invoke(): Flow<List<Record>> {
-        val from = OffsetDateTime.now().firstSecond
-        val to = from.lastSecond
-        return repository.getRecordsInRange(from, to).map { it.map { it.toModel() } }
+    operator fun invoke(from: OffsetDateTime, to: OffsetDateTime): Flow<List<Record>> {
+        val f = from.firstSecond
+        val t = to.lastSecond
+        return repository.getRecordsInRange(f, t).map { it.map { it.toModel() } }
     }
 }

@@ -2,14 +2,14 @@ package com.gmail.uli153.workdaymeter.data
 
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
 import com.gmail.uli153.workdaymeter.data.entities.RecordEntity
+import com.gmail.uli153.workdaymeter.utils.Formatters
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
-import java.time.LocalDateTime
-import java.util.*
+import org.threeten.bp.OffsetDateTime
 import javax.inject.Inject
 
 class WorkdayRepositoryImpl @Inject constructor(
@@ -21,7 +21,7 @@ class WorkdayRepositoryImpl @Inject constructor(
         return channelFlow {
             db.recordsDao().getStateFlow().collectLatest {
                 if (it.isEmpty()) {
-                    send(RecordEntity(Date(), ClockState.ClockOut))
+                    send(RecordEntity(OffsetDateTime.now(), ClockState.ClockOut))
                 } else {
                     send(it[0])
                 }
@@ -33,14 +33,19 @@ class WorkdayRepositoryImpl @Inject constructor(
         return db.recordsDao().getRecords().flowOn(dispatcher)
     }
 
-    override fun getTodayRecords(): Flow<List<RecordEntity>> {
-        return db.recordsDao().getTodayRecords().flowOn(dispatcher)
+    override fun getRecordsInRange(from: OffsetDateTime, to: OffsetDateTime): Flow<List<RecordEntity>> {
+        val formatter = Formatters.dateTime
+        val f = formatter.format(from)
+        val t = formatter.format(to)
+        return db.recordsDao()
+            .getRecordsInRange(f, t)
+            .flowOn(dispatcher)
     }
 
     override suspend fun getState(): RecordEntity {
         return db.recordsDao().getState().let {
             if (it.isEmpty()) {
-                RecordEntity(Date(), ClockState.ClockOut)
+                RecordEntity(OffsetDateTime.now(), ClockState.ClockOut)
             } else {
                 it[0]
             }

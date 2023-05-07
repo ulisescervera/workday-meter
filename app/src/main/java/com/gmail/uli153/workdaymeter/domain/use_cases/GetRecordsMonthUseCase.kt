@@ -8,12 +8,18 @@ import com.gmail.uli153.workdaymeter.utils.extensions.lastSecond
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.threeten.bp.OffsetDateTime
+import org.threeten.bp.YearMonth
 
-class GetTodayRecordsUseCase(private val repository: WorkdayRepository) {
+
+class GetRecordsMonthUseCase(private val repository: WorkdayRepository) {
 
     operator fun invoke(): Flow<List<Record>> {
-        val from = OffsetDateTime.now().firstSecond
-        val to = from.lastSecond
+        val from = OffsetDateTime.now()
+            .withDayOfMonth(1)
+            .firstSecond
+        val to = OffsetDateTime.now()
+            .withDayOfMonth(YearMonth.now().lengthOfMonth())
+            .lastSecond
         return repository.getRecordsInRange(from, to).map { it.map { it.toModel() } }
     }
 }

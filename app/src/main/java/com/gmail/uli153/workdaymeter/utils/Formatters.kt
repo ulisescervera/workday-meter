@@ -1,10 +1,11 @@
 package com.gmail.uli153.workdaymeter.utils
 
-import java.text.SimpleDateFormat
-import java.util.*
+import org.threeten.bp.format.DateTimeFormatter
+import java.util.Locale
 
 object Formatters {
-    val dateTime        get() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.getDefault())
-    val date            get() = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val dateTimeHuman   get() = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+    val dateTime        get() = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.getDefault())
+    val date            get() = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+    val dateTimeHuman   get() = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+
 }

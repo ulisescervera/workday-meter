@@ -1,59 +1,111 @@
 package com.gmail.uli153.workdaymeter.ui.screens
 
-import android.content.res.Resources.Theme
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.gmail.uli153.workdaymeter.domain.UIState
-import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
-import com.gmail.uli153.workdaymeter.utils.Formatters
-import java.text.SimpleDateFormat
 import com.gmail.uli153.workdaymeter.R
+import com.gmail.uli153.workdaymeter.domain.UIState
+import com.gmail.uli153.workdaymeter.domain.models.MeterState
+import com.gmail.uli153.workdaymeter.domain.models.Record
+import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
+import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilterOption
 import com.gmail.uli153.workdaymeter.utils.AppDimens
+import com.gmail.uli153.workdaymeter.utils.Formatters
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 import com.gmail.uli153.workdaymeter.utils.mockWorkingPeriods
+import org.threeten.bp.OffsetDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
 @Composable
-fun HistoryScreen(periods: State<UIState<List<WorkingPeriod>>>) {
+fun HistoryScreen(
+    state: State<UIState<Record>>,
+    filter: State<HistoryFilter>,
+    periods: State<UIState<List<WorkingPeriod>>>,
+    time: State<Long>,
+    setFilter: (HistoryFilter) -> Unit
+) {
     val items: List<WorkingPeriod> = when(val p = periods.value) {
         is UIState.Loading -> emptyList()
         is UIState.Success -> p.data
     }
     val formatter = Formatters.dateTimeHuman
+    val stateDate = (state.value as? UIState.Success)?.data?.let {
+        it.takeIf { it.state == MeterState.StateIn }?.date
+    }
+    val expanded = remember { mutableStateOf(false) }
+
     Box(modifier = Modifier
         .fillMaxSize(1f)
         .background(MaterialTheme.colorScheme.background)
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
-            modifier = Modifier.fillMaxSize(1f)
-        ) {
-            items(items) {
-                WorkingPeriodRow(it, formatter)
-                Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+        Row(modifier = Modifier.fillMaxWidth(1f)) {
+            DropdownMenu(modifier = Modifier.fillMaxWidth(1f), expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
+                for (o in HistoryFilterOption.values()) {
+                    DropdownMenuItem(text = { o.name }, onClick = {
+                        val f = when(o) {
+                            HistoryFilterOption.Range -> HistoryFilter.All
+                            HistoryFilterOption.All -> HistoryFilter.All
+                            HistoryFilterOption.Today -> HistoryFilter.Today
+                            HistoryFilterOption.Week -> HistoryFilter.Week
+                            HistoryFilterOption.Month -> HistoryFilter.Month
+                            HistoryFilterOption.Year -> HistoryFilter.Year
+                        }
+                        setFilter(f)
+                    })
+                }
+            }
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
+                modifier = Modifier.fillMaxSize(1f)
+            ) {
+                if (stateDate != null) {
+                    item {
+                        WorkingPeriodBaseRow(formatter, stateDate, null, time.value)
+                        Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+                    }
+                }
+                items(items) {
+                    WorkingPeriodRow(formatter, it)
+                    Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+                }
             }
         }
     }
 }
 
 @Composable
-private fun WorkingPeriodRow(period: WorkingPeriod, formatter: SimpleDateFormat) {
-    val end = if (period.end != null) {
-        formatter.format(period.end)
-    } else {
-        stringResource(id = R.string.waiting_clock_out)
-    }
+private fun WorkingPeriodBaseRow(
+    formatter: DateTimeFormatter,
+    start: OffsetDateTime,
+    end: OffsetDateTime?,
+    duration: Long
+){
+    val endText = end?.let { formatter.format(end) } ?: stringResource(R.string.waiting_clock_out)
+
     ElevatedCard(shape = RoundedCornerShape(AppDimens.rowCornerRadius),
         modifier = Modifier.fillMaxWidth(1f)
     ) {
@@ -63,21 +115,27 @@ private fun WorkingPeriodRow(period: WorkingPeriod, formatter: SimpleDateFormat)
             .padding(horizontal = AppDimens.rowHPadding, vertical = AppDimens.rowVPadding)
         ) {
             Column {
-                Text(text = formatter.format(period.start))
+                Text(text = formatter.format(start))
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(text = end)
+                Text(text = endText)
             }
-            if (period.duration != null) {
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = period.duration!!.formattedTime)
-            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(text = duration.formattedTime)
         }
     }
+}
+
+@Composable
+private fun WorkingPeriodRow(formatter: DateTimeFormatter, period: WorkingPeriod) {
+    WorkingPeriodBaseRow(formatter, period.start, period.end, period.duration)
 }
 
 @Preview
 @Composable
 fun HistoryScreen_Preview() {
-    val periods = mockWorkingPeriods
-    HistoryScreen(periods)
+    val history = mockWorkingPeriods
+    val time = remember { mutableStateOf(10L) }
+    val state = remember { mutableStateOf(UIState.Success(Record(OffsetDateTime.now(), MeterState.StateIn))) }
+    val filter = remember { mutableStateOf(HistoryFilter.All) }
+    HistoryScreen(state, filter, history, time, {})
 }

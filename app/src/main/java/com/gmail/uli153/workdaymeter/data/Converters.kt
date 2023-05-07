@@ -3,17 +3,17 @@ package com.gmail.uli153.workdaymeter.data
 import androidx.room.TypeConverter
 import com.gmail.uli153.workdaymeter.data.entities.ClockState
 import com.gmail.uli153.workdaymeter.utils.Formatters
-import java.util.Date
+import org.threeten.bp.OffsetDateTime
 
 class Converters {
 
     @TypeConverter
-    fun toDate(timestamp: String): Date {
-        return Formatters.dateTime.parse(timestamp)!!
+    fun toDate(timestamp: String): OffsetDateTime {
+        return Formatters.dateTime.parse(timestamp, OffsetDateTime::from)
     }
 
     @TypeConverter
-    fun toTimestamp(date: Date): String {
+    fun toTimestamp(date: OffsetDateTime): String {
         return Formatters.dateTime.format(date)
     }
 

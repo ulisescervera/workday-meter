@@ -33,9 +33,14 @@ class AppModule {
     fun recordUsesCases(repository: WorkdayRepository): RecordUseCases {
         return RecordUseCases(
             GetStateUseCase(repository),
-            GetRecordsUseCase(repository),
             ToggleStateUseCase(repository),
-            DeleteRecordUseCase(repository)
+            DeleteRecordUseCase(repository),
+            GetRecordsUseCase(repository),
+            GetRecordsInRangeUseCase(repository),
+            GetTodayRecordsUseCase(repository),
+            GetRecordsWeekUseCase(repository),
+            GetRecordsMonthUseCase(repository),
+            GetRecordsYearUseCase(repository)
         )
     }
 }
