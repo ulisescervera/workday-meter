@@ -14,7 +14,6 @@ import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
 
 @Composable
 fun NavigationGraph(
-    context: Context,
     navController: NavHostController,
     mainViewModel: MainViewModel = viewModel()
 ) {
@@ -34,7 +33,7 @@ fun NavigationGraph(
         }
 
         composable(NavigationItem.History.route) {
-            HistoryScreen(context, state, historyFilter, history, time, setFilter = {
+            HistoryScreen(state, historyFilter, history, time, setFilter = {
                 mainViewModel.setHistoryFilter(it)
             })
         }

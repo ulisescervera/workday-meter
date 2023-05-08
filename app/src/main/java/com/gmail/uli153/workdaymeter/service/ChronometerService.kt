@@ -114,7 +114,9 @@ class ChronometerService: LifecycleService() {
                     }
                 }
             }
+        }
 
+        CoroutineScope(Dispatchers.Main).launch {
             time.collectLatest {
                 val formattedTime = it.formattedTime
                 val notification = notificationBuilder.setContentText(formattedTime)

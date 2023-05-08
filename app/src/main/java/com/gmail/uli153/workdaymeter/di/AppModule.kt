@@ -5,6 +5,7 @@ import com.gmail.uli153.workdaymeter.data.WorkdayDatabase
 import com.gmail.uli153.workdaymeter.data.WorkdayRepository
 import com.gmail.uli153.workdaymeter.data.WorkdayRepositoryImpl
 import com.gmail.uli153.workdaymeter.domain.use_cases.*
+import com.gmail.uli153.workdaymeter.utils.PreferenceUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,6 +21,12 @@ class AppModule {
     @Singleton
     fun databaseProvider(@ApplicationContext context: Context): WorkdayDatabase {
         return WorkdayDatabase.buildDatabase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun preferencesProvider(@ApplicationContext context: Context): PreferenceUtils {
+        return PreferenceUtils(context)
     }
 
     @Provides

@@ -15,13 +15,12 @@ import com.gmail.uli153.workdaymeter.ui.views.BottomBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    context: Context,
     mainViewModel: MainViewModel = viewModel()
 ) {
     val navController = rememberNavController()
     Scaffold(
         bottomBar = { BottomBar(navController) }
     ) {
-        NavigationGraph(context, navController, mainViewModel)
+        NavigationGraph(navController, mainViewModel)
     }
 }

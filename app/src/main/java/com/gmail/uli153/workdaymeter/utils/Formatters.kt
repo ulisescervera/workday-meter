@@ -5,7 +5,7 @@ import java.util.Locale
 
 object Formatters {
     val dateTime        get() = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.getDefault())
-    val date            get() = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+    val dateHuman       get() = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
     val dateTimeHuman   get() = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
 
 }

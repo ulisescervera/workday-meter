@@ -10,6 +10,8 @@ import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
 import com.gmail.uli153.workdaymeter.domain.use_cases.RecordUseCases
 import com.gmail.uli153.workdaymeter.service.ChronometerService
+import com.gmail.uli153.workdaymeter.utils.Formatters
+import com.gmail.uli153.workdaymeter.utils.PreferenceUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,6 +33,7 @@ import kotlin.reflect.KClass
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    private val preferenceUtils: PreferenceUtils,
     private val recordUseCases: RecordUseCases
 ) : ViewModel() {
 
@@ -53,6 +56,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun setHistoryFilter(filter: HistoryFilter) {
+        preferenceUtils.saveFilter(filter)
         _filter.value = filter
     }
 
@@ -77,34 +81,10 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-    }
-}
 
-enum class HistoryFilterOption(val nameResId: Int) {
-    Range(R.string.filter_range),
-    All(R.string.filter_all),
-    Today(R.string.filter_today),
-    Week(R.string.filter_week),
-    Month(R.string.filter_month),
-    Year(R.string.filter_year)
-}
-
-sealed class HistoryFilter {
-    data class Range(val from: OffsetDateTime, val to: OffsetDateTime): HistoryFilter()
-    object All: HistoryFilter()
-    object Today: HistoryFilter()
-    object Week: HistoryFilter()
-    object Month: HistoryFilter()
-    object Year: HistoryFilter()
-
-    fun toString(context: Context): String {
-        return when(this) {
-            is Range -> context.getString(R.string.filter_range)
-            All -> context.getString(R.string.filter_all)
-            Today -> context.getString(R.string.filter_today)
-            Week -> context.getString(R.string.filter_week)
-            Month -> context.getString(R.string.filter_month)
-            Year -> context.getString(R.string.filter_year)
+        val filter = preferenceUtils.getFilter()
+        if (filter != null) {
+            _filter.value = filter
         }
     }
 }
