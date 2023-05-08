@@ -1,5 +1,6 @@
 package com.gmail.uli153.workdaymeter.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,6 +14,7 @@ import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
 
 @Composable
 fun NavigationGraph(
+    context: Context,
     navController: NavHostController,
     mainViewModel: MainViewModel = viewModel()
 ) {
@@ -32,7 +34,7 @@ fun NavigationGraph(
         }
 
         composable(NavigationItem.History.route) {
-            HistoryScreen(state, historyFilter, history, time, setFilter = {
+            HistoryScreen(context, state, historyFilter, history, time, setFilter = {
                 mainViewModel.setHistoryFilter(it)
             })
         }

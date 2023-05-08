@@ -15,4 +15,11 @@
 
     <string name="waiting_clock_out">Waiting clock-out</string>
 
+    <string name="filter_range">Dates range</string>
+    <string name="filter_all">All</string>
+    <string name="filter_today">Today</string>
+    <string name="filter_week">This week</string>
+    <string name="filter_month">This month</string>
+    <string name="filter_year">This year</string>
+
 </resources>

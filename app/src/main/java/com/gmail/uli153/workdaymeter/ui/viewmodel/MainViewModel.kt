@@ -1,5 +1,6 @@
 package com.gmail.uli153.workdaymeter.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -79,8 +80,13 @@ class MainViewModel @Inject constructor(
     }
 }
 
-enum class HistoryFilterOption {
-    Range, All, Today, Week, Month, Year
+enum class HistoryFilterOption(val nameResId: Int) {
+    Range(R.string.filter_range),
+    All(R.string.filter_all),
+    Today(R.string.filter_today),
+    Week(R.string.filter_week),
+    Month(R.string.filter_month),
+    Year(R.string.filter_year)
 }
 
 sealed class HistoryFilter {
@@ -91,14 +97,14 @@ sealed class HistoryFilter {
     object Month: HistoryFilter()
     object Year: HistoryFilter()
 
-    fun getNameResId(): Int {
+    fun toString(context: Context): String {
         return when(this) {
-            is Range -> R.string.app_name
-            All -> R.string.app_name
-            Today -> R.string.app_name
-            Week -> R.string.app_name
-            Month -> R.string.app_name
-            Year -> R.string.app_name
+            is Range -> context.getString(R.string.filter_range)
+            All -> context.getString(R.string.filter_all)
+            Today -> context.getString(R.string.filter_today)
+            Week -> context.getString(R.string.filter_week)
+            Month -> context.getString(R.string.filter_month)
+            Year -> context.getString(R.string.filter_year)
         }
     }
 }
