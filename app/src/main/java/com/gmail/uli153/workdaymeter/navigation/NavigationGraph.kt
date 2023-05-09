@@ -29,11 +29,13 @@ fun NavigationGraph(
         }
 
         composable(NavigationItem.Charts.route) {
-            ChartScreen()
+            ChartScreen(historyFilter, history, filterSelectedListener = {
+                mainViewModel.setHistoryFilter(it)
+            })
         }
 
         composable(NavigationItem.History.route) {
-            HistoryScreen(state, historyFilter, history, time, setFilter = {
+            HistoryScreen(state, historyFilter, history, time, filterSelectedListener = {
                 mainViewModel.setHistoryFilter(it)
             })
         }

@@ -25,12 +25,12 @@ val mockWorkingPeriods: State<UIState<List<WorkingPeriod>>> get() {
 val mockHistory: List<Record> get() {
     val l = mutableListOf<Record>()
     l.add(Record(OffsetDateTime.now().minusDays(400), MeterState.StateIn))
-    l.add(Record(OffsetDateTime.now().minusDays(400).plusHours(1), MeterState.StateOut))
+    l.add(Record(OffsetDateTime.now().minusDays(400).plusHours(5), MeterState.StateOut))
     l.add(Record(OffsetDateTime.now().minusMonths(2), MeterState.StateIn))
-    l.add(Record(OffsetDateTime.now().minusMonths(2).plusHours(1), MeterState.StateOut))
+    l.add(Record(OffsetDateTime.now().minusMonths(2).plusHours(3), MeterState.StateOut))
     l.add(Record(OffsetDateTime.now().minusDays(2).withHour(0).withMinute(0).withSecond(0), MeterState.StateIn))
-    l.add(Record(OffsetDateTime.now().minusDays(2).withHour(1).withMinute(0).withSecond(0), MeterState.StateOut))
+    l.add(Record(OffsetDateTime.now().minusDays(2).withHour(9).withMinute(0).withSecond(0), MeterState.StateOut))
     l.add(Record(OffsetDateTime.now().withHour(0).withMinute(0).withSecond(0), MeterState.StateIn))
-    l.add(Record(OffsetDateTime.now().withHour(1).withMinute(0).withSecond(0), MeterState.StateOut))
+    l.add(Record(OffsetDateTime.now().withHour(7).withMinute(0).withSecond(0), MeterState.StateOut))
     return l
 }

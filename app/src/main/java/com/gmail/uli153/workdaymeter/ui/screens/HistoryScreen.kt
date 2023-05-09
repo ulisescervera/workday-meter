@@ -41,11 +41,11 @@ import org.threeten.bp.format.DateTimeFormatter
 fun HistoryScreen(
     state: State<UIState<Record>>,
     filter: State<HistoryFilter>,
-    periods: State<UIState<List<WorkingPeriod>>>,
+    history: State<UIState<List<WorkingPeriod>>>,
     time: State<Long>,
-    setFilter: (HistoryFilter) -> Unit
+    filterSelectedListener: (HistoryFilter) -> Unit
 ) {
-    val items: List<WorkingPeriod> = when(val p = periods.value) {
+    val items: List<WorkingPeriod> = when(val p = history.value) {
         is UIState.Loading -> emptyList()
         is UIState.Success -> p.data
     }
@@ -61,7 +61,7 @@ fun HistoryScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         item {
-            HistoryDropdownMenu(filter, setFilter)
+            HistoryDropdownMenu(filter, filterSelectedListener)
         }
 
         if (stateDate != null) {
