@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +38,12 @@ enum class ButtonState {
 }
 
 @Composable
-fun HomeScreen(state: State<UIState<Record>>, time: State<Long>, toggleState: () -> Unit) {
+fun HomeScreen(
+    padding: PaddingValues,
+    state: State<UIState<Record>>,
+    time: State<Long>,
+    toggleState: () -> Unit
+) {
     val buttonState: ButtonState = state.value.toButtonState()
     val icon: Int
     val color: Color
@@ -61,7 +67,7 @@ fun HomeScreen(state: State<UIState<Record>>, time: State<Long>, toggleState: ()
     }
     Box(modifier = Modifier
         .background(MaterialTheme.colorScheme.background)
-        .padding(horizontal = 20.dp)
+        .padding(start = 20.dp, end = 20.dp, bottom = padding.calculateBottomPadding())
         .fillMaxSize()
     ) {
         Box(modifier = Modifier
@@ -98,7 +104,7 @@ fun HomeScreen(state: State<UIState<Record>>, time: State<Long>, toggleState: ()
 fun HomeScreen_Preview() {
     val state : State<UIState<Record>> = remember { mutableStateOf(UIState.Loading) }
     val time : State<Long> = remember { mutableStateOf(0L) }
-    HomeScreen(state, time, {})
+    HomeScreen(PaddingValues(0.dp) ,state, time, {})
 }
 
 private fun UIState<Record>.toButtonState(): ButtonState {

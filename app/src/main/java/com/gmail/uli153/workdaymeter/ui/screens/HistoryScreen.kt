@@ -39,6 +39,7 @@ import org.threeten.bp.format.DateTimeFormatter
 
 @Composable
 fun HistoryScreen(
+    padding: PaddingValues,
     state: State<UIState<Record>>,
     filter: State<HistoryFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
@@ -53,9 +54,14 @@ fun HistoryScreen(
     val stateDate = (state.value as? UIState.Success)?.data?.let {
         it.takeIf { it.state == MeterState.StateIn }?.date
     }
-
+    val listPadding = PaddingValues(
+        start = 20.dp,
+        top = 20.dp,
+        end = 20.dp,
+        bottom = padding.calculateBottomPadding() + 20.dp
+    )
     LazyColumn(
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
+        contentPadding = listPadding,
         modifier = Modifier
             .fillMaxSize(1f)
             .background(MaterialTheme.colorScheme.background)
@@ -117,5 +123,5 @@ fun HistoryScreen_Preview() {
     val time = remember { mutableStateOf(10L) }
     val state = remember { mutableStateOf(UIState.Success(Record(OffsetDateTime.now(), MeterState.StateIn))) }
     val filter = remember { mutableStateOf(HistoryFilter.All) }
-    HistoryScreen(state, filter, history, time, {})
+    HistoryScreen(PaddingValues(0.dp), state, filter, history, time, {})
 }

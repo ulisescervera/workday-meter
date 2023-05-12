@@ -11,12 +11,15 @@ import com.github.mikephil.charting.components.MarkerView
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.highlight.Highlight
 import com.gmail.uli153.workdaymeter.R
-import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
 import com.gmail.uli153.workdaymeter.utils.Formatters
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTimeChart
+import org.threeten.bp.OffsetDateTime
 
 @SuppressLint("ViewConstructor")
-class BarChartMarkerView(context: Context, private val items: List<WorkingPeriod>): MarkerView(context, R.layout.chart_marker_view) {
+class BarChartMarkerView(
+    context: Context,
+    val getStartDateAtIndex: (Int) -> OffsetDateTime?
+): MarkerView(context, R.layout.chart_marker_view) {
 
     private val labelDate: TextView = findViewById(R.id.label_date)
     private val labelValue: TextView = findViewById(R.id.label_value)
@@ -37,7 +40,7 @@ class BarChartMarkerView(context: Context, private val items: List<WorkingPeriod
     }
 
     private fun getFormattedDateAtIndex(index: Float): String {
-        val date = items.getOrNull(index.toInt())?.start
+        val date = getStartDateAtIndex(index.toInt())
         return if (date != null) {
             val now = org.threeten.bp.OffsetDateTime.now()
             if (date.year == now.year && date.dayOfYear == now.dayOfYear) {

@@ -10,4 +10,7 @@ object AppDimens {
     val rowHPadding = 12.dp
     val rowVPadding = 8.dp
     val rowVSpace = 16.dp
+    val bottomNavigationHeight = 52.dp
+    val bottomNavigationMarginBottom = 10.dp
+    val bottomNavigationMarginHorizontal = 20.dp
 }

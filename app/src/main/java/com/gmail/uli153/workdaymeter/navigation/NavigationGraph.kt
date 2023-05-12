@@ -1,5 +1,6 @@
 package com.gmail.uli153.workdaymeter.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -14,6 +15,7 @@ import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
+    padding: PaddingValues,
     mainViewModel: MainViewModel = viewModel()
 ) {
     val state = mainViewModel.state.collectAsState()
@@ -23,19 +25,19 @@ fun NavigationGraph(
 
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
-            HomeScreen(state, time, toggleState = {
+            HomeScreen(padding, state, time, toggleState = {
                 mainViewModel.toggleState()
             })
         }
 
         composable(NavigationItem.Charts.route) {
-            ChartScreen(historyFilter, history, filterSelectedListener = {
+            ChartScreen(padding, historyFilter, history, filterSelectedListener = {
                 mainViewModel.setHistoryFilter(it)
             })
         }
 
         composable(NavigationItem.History.route) {
-            HistoryScreen(state, historyFilter, history, time, filterSelectedListener = {
+            HistoryScreen(padding, state, historyFilter, history, time, filterSelectedListener = {
                 mainViewModel.setHistoryFilter(it)
             })
         }

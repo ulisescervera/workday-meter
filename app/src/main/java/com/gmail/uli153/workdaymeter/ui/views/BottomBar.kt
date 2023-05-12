@@ -1,20 +1,35 @@
 package com.gmail.uli153.workdaymeter.ui.views
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults.containerColor
+import androidx.compose.material3.NavigationBarDefaults.windowInsets
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.gmail.uli153.workdaymeter.navigation.NavigationItem
 import com.gmail.uli153.workdaymeter.ui.theme.disabled
+import com.gmail.uli153.workdaymeter.utils.AppDimens
 
 @Composable
 fun BottomBar(
@@ -25,24 +40,41 @@ fun BottomBar(
         NavigationItem.Charts,
         NavigationItem.History
     )
-    NavigationBar(
-
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = AppDimens.bottomNavigationMarginHorizontal,
+            end = AppDimens.bottomNavigationMarginHorizontal,
+            bottom = AppDimens.bottomNavigationMarginBottom
+        )
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-        val onPrimary = MaterialTheme.colorScheme.onPrimary
-        items.forEachIndexed { _, item ->
-            NavigationBarItem(
-                icon = { Icon(painterResource(id = item.icon), contentDescription = stringResource(id = item.title)) },
-                label = { Text(text = stringResource(id = item.title)) },
-                selected = item.route == currentRoute,
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = onPrimary,
-                    unselectedIconColor = onPrimary.disabled(),
-                    indicatorColor = Color.Transparent
-                ),
-                onClick = { onItemClicked(item, navController) }
+        NavigationBar(
+            containerColor = MaterialTheme.colorScheme.primary,
+            tonalElevation = 4.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(AppDimens.bottomNavigationHeight)
+                .clip(RoundedCornerShape(AppDimens.bottomNavigationHeight / 2))
+        ) {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+            val onPrimary = MaterialTheme.colorScheme.onPrimary
+            val colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = onPrimary,
+                unselectedIconColor = onPrimary.disabled(),
+                indicatorColor = MaterialTheme.colorScheme.primary,
             )
+            items.forEachIndexed { _, item ->
+                NavigationBarItem(
+                    icon = { Icon(painterResource(id = item.icon),
+                        contentDescription = stringResource(id = item.title),
+                        modifier = Modifier.fillMaxHeight(0.65f)
+                    )},
+                    label = null,
+                    selected = item.route == currentRoute,
+                    colors = colors,
+                    onClick = { onItemClicked(item, navController) }
+                )
+            }
         }
     }
 }

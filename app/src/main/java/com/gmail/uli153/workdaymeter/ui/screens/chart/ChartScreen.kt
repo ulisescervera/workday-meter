@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,6 +39,7 @@ import com.gmail.uli153.workdaymeter.utils.mockWorkingPeriods
 
 @Composable
 fun ChartScreen(
+    padding: PaddingValues,
     filter: State<HistoryFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
     filterSelectedListener: (HistoryFilter) -> Unit
@@ -45,6 +47,7 @@ fun ChartScreen(
     Column(modifier = Modifier
         .fillMaxSize(1f)
         .background(MaterialTheme.colorScheme.background)
+        .padding(bottom = padding.calculateBottomPadding())
     ) {
         Box(modifier = Modifier
             .fillMaxWidth(1f)
@@ -52,12 +55,12 @@ fun ChartScreen(
         ) {
             HistoryDropdownMenu(filter, filterSelectedListener)
         }
-        WorkingChart(LocalContext.current, history)
+        WorkingChart(history)
     }
 }
 
 @Composable
-private fun WorkingChart(context: Context, history: State<UIState<List<WorkingPeriod>>>) {
+private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
     val items: List<WorkingPeriod> = when(val p = history.value) {
         is UIState.Loading -> emptyList()
         is UIState.Success -> p.data.reversed()
@@ -75,6 +78,9 @@ private fun WorkingChart(context: Context, history: State<UIState<List<WorkingPe
                 isDragYEnabled = false
                 axisRight.isEnabled = false
                 setScaleEnabled(false)
+                marker = BarChartMarkerView(context) {
+                    items.getOrNull(it)?.start
+                }
                 with(xAxis) {
                     isEnabled = true
                     setDrawGridLines(false)
@@ -110,17 +116,6 @@ private fun WorkingChart(context: Context, history: State<UIState<List<WorkingPe
                 )
                 renderer.radius = 8f.dp.value.toInt()
                 this.renderer = renderer
-
-                this.setOnChartValueSelectedListener(object: OnChartValueSelectedListener {
-                    override fun onValueSelected(e: Entry, h: Highlight?) {
-                        this@apply.highlightValue(e.x, 0, false)
-                    }
-
-                    override fun onNothingSelected() {
-                        this@apply.highlightValues(emptyArray())
-                    }
-
-                })
             }
         },
         update = { barChart ->
@@ -150,7 +145,6 @@ private fun WorkingChart(context: Context, history: State<UIState<List<WorkingPe
             barChart.setVisibleXRangeMaximum(10f)
             barChart.xAxis.axisMinimum = -data.barWidth/2f
             barChart.xAxis.axisMaximum = data.entryCount - data.barWidth/2f
-            barChart.marker = BarChartMarkerView(context, items)
             barChart.animateY(1000)
             barChart.notifyDataSetChanged()
             barChart.invalidate()
@@ -163,5 +157,5 @@ private fun WorkingChart(context: Context, history: State<UIState<List<WorkingPe
 fun ChartScreen_Preview() {
     val filter = remember { mutableStateOf(HistoryFilter.All) }
     val history = remember { mockWorkingPeriods }
-    ChartScreen(filter, history, filterSelectedListener = {})
+    ChartScreen(PaddingValues(0.dp), filter, history, filterSelectedListener = {})
 }
