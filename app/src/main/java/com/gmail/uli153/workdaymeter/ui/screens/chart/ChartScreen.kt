@@ -47,7 +47,7 @@ fun ChartScreen(
     Column(modifier = Modifier
         .fillMaxSize(1f)
         .background(MaterialTheme.colorScheme.background)
-        .padding(bottom = padding.calculateBottomPadding())
+        .padding(bottom = padding.calculateBottomPadding() + 20.dp)
     ) {
         Box(modifier = Modifier
             .fillMaxWidth(1f)
@@ -133,6 +133,7 @@ private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
                     val hours = (max / hourMillis).toInt()
                     axisMaximum = (hours + 1) * hourMillis
                 }
+                axisMinimum = 0f
             }
 
             val dataSet = BarDataSet(entries, "")
@@ -143,9 +144,9 @@ private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
             data.barWidth = 0.40f
             barChart.data = data
             barChart.setVisibleXRangeMaximum(10f)
-            barChart.xAxis.axisMinimum = -data.barWidth/2f
-            barChart.xAxis.axisMaximum = data.entryCount - data.barWidth/2f
-            barChart.animateY(1000)
+            barChart.xAxis.axisMinimum = -data.barWidth / 2f
+            barChart.xAxis.axisMaximum = data.entryCount - data.barWidth / 2f
+            barChart.animateY(500)
             barChart.notifyDataSetChanged()
             barChart.invalidate()
         }

@@ -83,13 +83,16 @@ class ChronometerService: LifecycleService() {
             .stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, UIState.Loading)
     }
 
+    private val notificationManager by lazy {
+        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
     private var lastRecordTime: OffsetDateTime? = null
     private var timerJob: Job? = null
     private var currentState: UIState<Record> = UIState.Loading
 
     override fun onCreate() {
         super.onCreate()
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         startForegroundService(notificationManager)
         CoroutineScope(Dispatchers.Main).launch {
             state.collectLatest { state ->
@@ -118,10 +121,13 @@ class ChronometerService: LifecycleService() {
 
         CoroutineScope(Dispatchers.Main).launch {
             time.collectLatest {
-                val formattedTime = it.formattedTime
-                val notification = notificationBuilder.setContentText(formattedTime)
-                notificationManager.notify(NOTIFICATION_ID, notification.build())
-                updateWidget(currentState, formattedTime)
+                val current = currentState
+                if (current is UIState.Success && current.data.state == MeterState.StateIn) {
+                    val formattedTime = it.formattedTime
+                    val notification = notificationBuilder.setContentText(formattedTime)
+                    notificationManager.notify(NOTIFICATION_ID, notification.build())
+                    updateWidget(currentState, formattedTime)
+                }
             }
         }
     }
@@ -191,6 +197,8 @@ class ChronometerService: LifecycleService() {
         )
         timerJob?.cancel()
         _time.value = 0L
+        notificationManager.cancel(NOTIFICATION_ID)
+        stopForeground(true)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
