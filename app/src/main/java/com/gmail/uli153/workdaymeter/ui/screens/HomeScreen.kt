@@ -1,6 +1,8 @@
 package com.gmail.uli153.workdaymeter.ui.screens
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -22,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +35,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -54,18 +60,62 @@ fun HomeScreen(
     time: State<Long>,
     toggleState: () -> Unit
 ) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)
+        .padding(
+            start = 0.dp,
+            top = 0.dp,
+            end = 0.dp,
+            bottom = padding.calculateBottomPadding()
+        )
+    ) {
+        ChronometerButton(state, time, toggleState, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+@Composable
+fun ChronometerButton(
+    state: State<UIState<Record>>,
+    time: State<Long>,
+    toggleState: () -> Unit,
+    modifier: Modifier
+) {
+    val planetSize = 16.dp
+    val planetSize2 = (2 * planetSize.value).dp
+    val distanceToSun = 8.dp
     val buttonState: ButtonState = state.value.toButtonState()
+
+
+//    val lastAngle = remember { mutableStateOf(0f) }
+//    val infiniteTransition = rememberInfiniteTransition()
+//    val angle = infiniteTransition.animateFloat(
+//        initialValue = 0F,
+//        targetValue = 360F,
+//        animationSpec = infiniteRepeatable(
+//            animation = tween(8000, easing = LinearEasing)
+//        )
+//    )
+//    lastAngle.value = angle.value
+
+
+    val animate = buttonState == ButtonState.In
+    val lastAngle = remember { mutableStateOf(0f) }
+    val angle = remember(animate) { Animatable(lastAngle.value) }
+    LaunchedEffect(animate) {
+        if (animate) {
+            angle.animateTo(
+                360f + lastAngle.value,
+                animationSpec = infiniteRepeatable(animation = tween(8000, easing = LinearEasing), repeatMode = RepeatMode.Restart)
+            ) {
+                lastAngle.value = value // store the anim value
+            }
+        }
+    }
+
     val icon: Int
     val color: Color
     val alpha: Float
-    val infiniteTransition = rememberInfiniteTransition()
-    val angle = infiniteTransition.animateFloat(
-        initialValue = 0F,
-        targetValue = 360F,
-        animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing)
-        )
-    )
     when (buttonState) {
         ButtonState.In -> {
             icon = R.drawable.ic_clock_out
@@ -83,26 +133,22 @@ fun HomeScreen(
             alpha = 1f
         }
     }
-    ConstraintLayout(modifier = Modifier
-        .background(MaterialTheme.colorScheme.background)
-        .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = padding.calculateBottomPadding())
-        .fillMaxSize()
-    ) {
-        val (button, img1) = createRefs()
-        val buttonSize = remember { mutableStateOf(0) }
 
+    ConstraintLayout(modifier = modifier) {
+        val (sun, planet1, planet2, planet3, planet4, planet5, planet6, planet7, planet8, planet9, planet10, planet11, planet12) = createRefs()
+        val sunSize = remember { mutableStateOf(Dp(0f)) }
+        val localDensity = LocalDensity.current
         Button(onClick = toggleState,
             modifier = Modifier
-                .constrainAs(button) {
-                    top.linkTo(parent.top, margin = 40.dp)
-                    start.linkTo(parent.start, margin = 40.dp)
-                    end.linkTo(parent.end, margin = 40.dp)
-                }
                 .aspectRatio(1f)
-                .padding(4.dp)
-                .fillMaxSize()
+                .padding(planetSize2 + distanceToSun)
+                .constrainAs(sun) {
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                }
                 .onGloballyPositioned {
-                    buttonSize.value = it.size.width
+                    sunSize.value = with(localDensity) { it.size.width.toDp() }
                 },
             shape = CircleShape
         ) {
@@ -122,20 +168,31 @@ fun HomeScreen(
             }
         }
 
-        Box(modifier = Modifier
-            .width(24.dp)
-            .aspectRatio(1f)
-            .constrainAs(img1) {
-                circular(button, if (buttonState == ButtonState.In) angle.value else 90f, (buttonSize.value/4).dp)
-            }
-            .drawBehind {
-                drawCircle(
-                    color = Color.Magenta,
-                    radius = this.size.maxDimension
-                )
-            }
-        )
+        val distance = (sunSize.value / 2) + planetSize + distanceToSun
+        val planets = listOf(planet1, planet2, planet3, planet4, planet5, planet6, planet7, planet8, planet9, planet10, planet11, planet12)
+        planets.forEachIndexed { index, constrainedLayoutReference ->
+            Planet(planetSize, constraints = Modifier.constrainAs(constrainedLayoutReference) {
+                circular(sun, lastAngle.value + (360f * (index.toFloat() / planets.size)), distance)
+            })
+        }
     }
+}
+
+@Composable
+fun Planet(
+    planetSize: Dp,
+    constraints: Modifier
+) {
+    Box(modifier = constraints
+        .width(planetSize)
+        .aspectRatio(1f)
+        .drawBehind {
+            drawCircle(
+                color = Color.Magenta,
+                radius = this.size.maxDimension
+            )
+        }
+    )
 }
 
 @Preview
