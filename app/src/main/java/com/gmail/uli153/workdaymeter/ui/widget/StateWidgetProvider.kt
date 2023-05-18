@@ -30,23 +30,22 @@ class StateWidgetProvider: AppWidgetProvider() {
                 is UIState.Loading -> {
                     views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_in)
                     views.setViewVisibility(R.id.label_time, View.GONE)
-                    views.setViewVisibility(R.id.btn_toggle, View.VISIBLE)
-                    views.setTextViewText(R.id.btn_toggle, context.getString(R.string.out))
+                    views.setViewVisibility(R.id.btn_play, View.GONE)
+                    views.setViewVisibility(R.id.progress_bar, View.VISIBLE)
                 }
                 is UIState.Success -> {
+                    views.setViewVisibility(R.id.progress_bar, View.GONE)
                     when(state.data.state) {
                         MeterState.StateIn -> {
+                            views.setViewVisibility(R.id.btn_play, View.GONE)
                             views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_in)
                             views.setViewVisibility(R.id.label_time, View.VISIBLE)
                             views.setTextViewText(R.id.label_time, formattedTime)
-                            views.setViewVisibility(R.id.btn_toggle, View.INVISIBLE)
-                            views.setTextViewText(R.id.btn_toggle, context.getString(R.string.out))
                         }
                         MeterState.StateOut -> {
                             views.setImageViewResource(R.id.background, R.drawable.bg_tv_widget_out)
                             views.setViewVisibility(R.id.label_time, View.GONE)
-                            views.setViewVisibility(R.id.btn_toggle, View.VISIBLE)
-                            views.setTextViewText(R.id.btn_toggle, context.getString(R.string.`in`))
+                            views.setViewVisibility(R.id.btn_play, View.VISIBLE)
                         }
                     }
                 }

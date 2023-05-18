@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintLayoutScope
 import coil.compose.rememberAsyncImagePainter
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
@@ -64,9 +65,9 @@ fun HomeScreen(
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.background)
         .padding(
-            start = 0.dp,
-            top = 0.dp,
-            end = 0.dp,
+            start = 20.dp,
+            top = 20.dp,
+            end = 20.dp,
             bottom = padding.calculateBottomPadding()
         )
     ) {
@@ -81,11 +82,14 @@ fun ChronometerButton(
     toggleState: () -> Unit,
     modifier: Modifier
 ) {
-    val planetSize = 16.dp
+    val planetSize = 12.dp
     val planetSize2 = (2 * planetSize.value).dp
-    val distanceToSun = 8.dp
+    val distanceToSun = 6.dp
     val buttonState: ButtonState = state.value.toButtonState()
-
+    val sunSize = remember { mutableStateOf(Dp(0f)) }
+    val localDensity = LocalDensity.current
+    val planetColor = MaterialTheme.colorScheme.secondary
+    val distance = (sunSize.value / 2) + planetSize + distanceToSun
 
 //    val lastAngle = remember { mutableStateOf(0f) }
 //    val infiniteTransition = rememberInfiniteTransition()
@@ -135,9 +139,9 @@ fun ChronometerButton(
     }
 
     ConstraintLayout(modifier = modifier) {
-        val (sun, planet1, planet2, planet3, planet4, planet5, planet6, planet7, planet8, planet9, planet10, planet11, planet12) = createRefs()
-        val sunSize = remember { mutableStateOf(Dp(0f)) }
-        val localDensity = LocalDensity.current
+        val sun = createRef()
+        val planets = (0 until 24).map { createRef() }
+
         Button(onClick = toggleState,
             modifier = Modifier
                 .aspectRatio(1f)
@@ -168,11 +172,13 @@ fun ChronometerButton(
             }
         }
 
-        val distance = (sunSize.value / 2) + planetSize + distanceToSun
-        val planets = listOf(planet1, planet2, planet3, planet4, planet5, planet6, planet7, planet8, planet9, planet10, planet11, planet12)
         planets.forEachIndexed { index, constrainedLayoutReference ->
-            Planet(planetSize, constraints = Modifier.constrainAs(constrainedLayoutReference) {
-                circular(sun, lastAngle.value + (360f * (index.toFloat() / planets.size)), distance)
+            val offset = (index.toFloat() / planets.size) * 360f
+            val angle = lastAngle.value + offset
+            val sin = Math.sin(angle * Math.PI / 180)
+            val dis = distance + (distanceToSun.value * sin).dp
+            Planet(planetSize, planetColor, constraints = Modifier.constrainAs(constrainedLayoutReference) {
+                circular(sun, angle, dis)
             })
         }
     }
@@ -181,16 +187,14 @@ fun ChronometerButton(
 @Composable
 fun Planet(
     planetSize: Dp,
+    planetColor: Color,
     constraints: Modifier
 ) {
     Box(modifier = constraints
         .width(planetSize)
         .aspectRatio(1f)
         .drawBehind {
-            drawCircle(
-                color = Color.Magenta,
-                radius = this.size.maxDimension
-            )
+            drawCircle(color = planetColor, radius = this.size.maxDimension)
         }
     )
 }
