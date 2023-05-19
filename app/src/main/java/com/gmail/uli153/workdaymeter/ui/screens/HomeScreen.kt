@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -82,26 +84,14 @@ fun ChronometerButton(
     toggleState: () -> Unit,
     modifier: Modifier
 ) {
-    val planetSize = 12.dp
+    val planetSize = 20.dp
     val planetSize2 = (2 * planetSize.value).dp
-    val distanceToSun = 6.dp
-    val buttonState: ButtonState = state.value.toButtonState()
+    val distanceToSun = 4.dp
     val sunSize = remember { mutableStateOf(Dp(0f)) }
     val localDensity = LocalDensity.current
     val planetColor = MaterialTheme.colorScheme.secondary
     val distance = (sunSize.value / 2) + planetSize + distanceToSun
-
-//    val lastAngle = remember { mutableStateOf(0f) }
-//    val infiniteTransition = rememberInfiniteTransition()
-//    val angle = infiniteTransition.animateFloat(
-//        initialValue = 0F,
-//        targetValue = 360F,
-//        animationSpec = infiniteRepeatable(
-//            animation = tween(8000, easing = LinearEasing)
-//        )
-//    )
-//    lastAngle.value = angle.value
-
+    val buttonState: ButtonState = state.value.toButtonState()
 
     val animate = buttonState == ButtonState.In
     val lastAngle = remember { mutableStateOf(0f) }
@@ -110,7 +100,7 @@ fun ChronometerButton(
         if (animate) {
             angle.animateTo(
                 360f + lastAngle.value,
-                animationSpec = infiniteRepeatable(animation = tween(8000, easing = LinearEasing), repeatMode = RepeatMode.Restart)
+                animationSpec = infiniteRepeatable(animation = tween(15000, easing = LinearEasing), repeatMode = RepeatMode.Restart)
             ) {
                 lastAngle.value = value // store the anim value
             }
@@ -139,8 +129,9 @@ fun ChronometerButton(
     }
 
     ConstraintLayout(modifier = modifier) {
+        val planetsCount = 24
         val sun = createRef()
-        val planets = (0 until 24).map { createRef() }
+        val planets = (0 until planetsCount).map { createRef() }
 
         Button(onClick = toggleState,
             modifier = Modifier
@@ -173,10 +164,9 @@ fun ChronometerButton(
         }
 
         planets.forEachIndexed { index, constrainedLayoutReference ->
-            val offset = (index.toFloat() / planets.size) * 360f
+            val offset = (index.toFloat() / planetsCount) * 360f
             val angle = lastAngle.value + offset
-            val sin = Math.sin(angle * Math.PI / 180)
-            val dis = distance + (distanceToSun.value * sin).dp
+            val dis = distance + distanceToSun
             Planet(planetSize, planetColor, constraints = Modifier.constrainAs(constrainedLayoutReference) {
                 circular(sun, angle, dis)
             })
@@ -191,10 +181,9 @@ fun Planet(
     constraints: Modifier
 ) {
     Box(modifier = constraints
-        .width(planetSize)
-        .aspectRatio(1f)
+        .size(planetSize)
         .drawBehind {
-            drawCircle(color = planetColor, radius = this.size.maxDimension)
+            drawCircle(color = planetColor, radius = planetSize.value/2)
         }
     )
 }
