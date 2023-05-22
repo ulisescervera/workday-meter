@@ -133,6 +133,7 @@ class ChronometerService: LifecycleService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         when(intent?.action) {
             ACTION_TOGGLE_STATE -> {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -142,7 +143,7 @@ class ChronometerService: LifecycleService() {
             else -> Unit
         }
 
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onDestroy() {

@@ -42,14 +42,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintLayoutScope
 import coil.compose.rememberAsyncImagePainter
+import com.airbnb.lottie.LottieAnimationView
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.ui.theme.disabled
+import com.gmail.uli153.workdaymeter.ui.views.ChronometerButton
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 
 enum class ButtonState {
@@ -77,116 +85,7 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun ChronometerButton(
-    state: State<UIState<Record>>,
-    time: State<Long>,
-    toggleState: () -> Unit,
-    modifier: Modifier
-) {
-    val planetSize = 20.dp
-    val planetSize2 = (2 * planetSize.value).dp
-    val distanceToSun = 4.dp
-    val sunSize = remember { mutableStateOf(Dp(0f)) }
-    val localDensity = LocalDensity.current
-    val planetColor = MaterialTheme.colorScheme.secondary
-    val distance = (sunSize.value / 2) + planetSize + distanceToSun
-    val buttonState: ButtonState = state.value.toButtonState()
 
-    val animate = buttonState == ButtonState.In
-    val lastAngle = remember { mutableStateOf(0f) }
-    val angle = remember(animate) { Animatable(lastAngle.value) }
-    LaunchedEffect(animate) {
-        if (animate) {
-            angle.animateTo(
-                360f + lastAngle.value,
-                animationSpec = infiniteRepeatable(animation = tween(15000, easing = LinearEasing), repeatMode = RepeatMode.Restart)
-            ) {
-                lastAngle.value = value // store the anim value
-            }
-        }
-    }
-
-    val icon: Int
-    val color: Color
-    val alpha: Float
-    when (buttonState) {
-        ButtonState.In -> {
-            icon = R.drawable.ic_clock_out
-            color = MaterialTheme.colorScheme.onPrimary
-            alpha = 1f
-        }
-        ButtonState.Out -> {
-            icon = R.drawable.ic_clock_in
-            color = MaterialTheme.colorScheme.onPrimary.disabled()
-            alpha = 1f
-        }
-        ButtonState.Disabled -> {
-            icon = R.drawable.ic_clock_in
-            color = MaterialTheme.colorScheme.error.disabled()
-            alpha = 1f
-        }
-    }
-
-    ConstraintLayout(modifier = modifier) {
-        val planetsCount = 24
-        val sun = createRef()
-        val planets = (0 until planetsCount).map { createRef() }
-
-        Button(onClick = toggleState,
-            modifier = Modifier
-                .aspectRatio(1f)
-                .padding(planetSize2 + distanceToSun)
-                .constrainAs(sun) {
-                    start.linkTo(parent.start)
-                    top.linkTo(parent.top)
-                    end.linkTo(parent.end)
-                }
-                .onGloballyPositioned {
-                    sunSize.value = with(localDensity) { it.size.width.toDp() }
-                },
-            shape = CircleShape
-        ) {
-            Column(verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize(0.75f)
-            ) {
-                Text(text = time.value.formattedTime, color = Color.White, fontSize = 24.sp)
-                Spacer(modifier = Modifier.height(30.dp))
-                Icon(painter = rememberAsyncImagePainter(icon),
-                    contentDescription = "",
-                    tint = color,
-                    modifier = Modifier
-                        .alpha(alpha)
-                        .fillMaxSize(0.75f)
-                )
-            }
-        }
-
-        planets.forEachIndexed { index, constrainedLayoutReference ->
-            val offset = (index.toFloat() / planetsCount) * 360f
-            val angle = lastAngle.value + offset
-            val dis = distance + distanceToSun
-            Planet(planetSize, planetColor, constraints = Modifier.constrainAs(constrainedLayoutReference) {
-                circular(sun, angle, dis)
-            })
-        }
-    }
-}
-
-@Composable
-fun Planet(
-    planetSize: Dp,
-    planetColor: Color,
-    constraints: Modifier
-) {
-    Box(modifier = constraints
-        .size(planetSize)
-        .drawBehind {
-            drawCircle(color = planetColor, radius = planetSize.value/2)
-        }
-    )
-}
 
 @Preview
 @Composable
@@ -196,12 +95,3 @@ fun HomeScreen_Preview() {
     HomeScreen(PaddingValues(0.dp) ,state, time, {})
 }
 
-private fun UIState<Record>.toButtonState(): ButtonState {
-    return when (this) {
-        is UIState.Success -> when (this.data.state) {
-            MeterState.StateIn -> ButtonState.In
-            MeterState.StateOut -> ButtonState.Out
-        }
-        else -> ButtonState.Disabled
-    }
-}
