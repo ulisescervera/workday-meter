@@ -60,13 +60,14 @@ fun ChronometerButton(
     toggleState: () -> Unit,
     modifier: Modifier
 ) {
+    val planetsCount = 24
     val planetSize = 12.dp
     val planetSize2 = (2 * planetSize.value).dp
-    val distanceToSun = 0.dp
+    val distanceToSun = 6.dp
     val sunSize = remember { mutableStateOf(Dp(0f)) }
     val localDensity = LocalDensity.current
     val planetColor = MaterialTheme.colorScheme.secondary
-    val distance = (sunSize.value / 2) + planetSize + distanceToSun
+    val distance = (sunSize.value / 2) + planetSize/2
     val buttonState: ButtonState = state.value.toButtonState()
     val animate = buttonState == ButtonState.In
     val lastAngle = remember { mutableStateOf(0f) }
@@ -113,7 +114,6 @@ fun ChronometerButton(
     }
 
     ConstraintLayout(modifier = modifier) {
-        val planetsCount = 24
         val sun = createRef()
         val planets = (0 until planetsCount).map { createRef() }
 
