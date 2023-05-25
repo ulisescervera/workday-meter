@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.threeten.bp.DayOfWeek
 import org.threeten.bp.OffsetDateTime
 import java.util.Date
 import javax.inject.Inject
@@ -49,6 +50,9 @@ class MainViewModel @Inject constructor(
     private val _history: MutableStateFlow<UIState<List<WorkingPeriod>>> = MutableStateFlow(UIState.Loading)
     val history: StateFlow<UIState<List<WorkingPeriod>>> = _history
 
+    private val _selectedDays: MutableStateFlow<List<DayOfWeek>> = MutableStateFlow(DayOfWeek.values().toList())
+    val selectedDays: StateFlow<List<DayOfWeek>> = _selectedDays
+
     fun toggleState() {
         viewModelScope.launch(Dispatchers.IO) {
             recordUseCases.toggleStateUseCase()
@@ -58,6 +62,10 @@ class MainViewModel @Inject constructor(
     fun setHistoryFilter(filter: HistoryFilter) {
         preferenceUtils.saveFilter(filter)
         _filter.value = filter
+    }
+
+    fun setSelectedDays(days: List<DayOfWeek>) {
+        _selectedDays.value = days
     }
 
     private var currentHistoryJob: Job? = null

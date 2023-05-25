@@ -30,10 +30,12 @@ import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
 import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
 import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.views.DayFilterSelector
 import com.gmail.uli153.workdaymeter.utils.AppDimens
 import com.gmail.uli153.workdaymeter.utils.Formatters
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
 import com.gmail.uli153.workdaymeter.utils.mockWorkingPeriods
+import org.threeten.bp.DayOfWeek
 import org.threeten.bp.OffsetDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -44,7 +46,9 @@ fun HistoryScreen(
     filter: State<HistoryFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
     time: State<Long>,
-    filterSelectedListener: (HistoryFilter) -> Unit
+    selectedDays: State<List<DayOfWeek>>,
+    filterSelectedListener: (HistoryFilter) -> Unit,
+    onDayListChanged: (List<DayOfWeek>) -> Unit
 ) {
     val items: List<WorkingPeriod> = when(val p = history.value) {
         is UIState.Loading -> emptyList()
@@ -68,6 +72,7 @@ fun HistoryScreen(
     ) {
         item {
             HistoryDropdownMenu(filter, filterSelectedListener)
+            DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
         }
 
         if (stateDate != null) {
@@ -123,5 +128,6 @@ fun HistoryScreen_Preview() {
     val time = remember { mutableStateOf(10L) }
     val state = remember { mutableStateOf(UIState.Success(Record(OffsetDateTime.now(), MeterState.StateIn))) }
     val filter = remember { mutableStateOf(HistoryFilter.All) }
-    HistoryScreen(PaddingValues(0.dp), state, filter, history, time, {})
+    val days = remember { mutableStateOf(DayOfWeek.values().toList()) }
+    HistoryScreen(PaddingValues(0.dp), state, filter, history, time, days, {}, {})
 }

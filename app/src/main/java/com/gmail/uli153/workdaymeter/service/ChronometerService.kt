@@ -13,7 +13,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.LifecycleService
+import android.app.Service
+import android.os.IBinder
 import com.gmail.uli153.workdaymeter.MainActivity
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
@@ -32,7 +33,7 @@ import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ChronometerService: LifecycleService() {
+class ChronometerService: Service() {
 
     companion object {
         const val ACTION_TOGGLE_STATE = "ACTION_TOGGLE_STATE"
@@ -90,6 +91,10 @@ class ChronometerService: LifecycleService() {
     private var lastRecordTime: OffsetDateTime? = null
     private var timerJob: Job? = null
     private var currentState: UIState<Record> = UIState.Loading
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
 
     override fun onCreate() {
         super.onCreate()

@@ -1,6 +1,7 @@
 package com.gmail.uli153.workdaymeter
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,7 +26,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val intent = Intent(applicationContext, ChronometerService::class.java)
-        applicationContext.startService(intent)
+        if (Build.VERSION.SDK_INT >= 26) {
+            applicationContext.startForegroundService(intent)
+        } else {
+            applicationContext.startService(intent)
+        }
+
         setContent {
             WorkdayMeterTheme {
                 // A surface container using the 'background' color from the theme

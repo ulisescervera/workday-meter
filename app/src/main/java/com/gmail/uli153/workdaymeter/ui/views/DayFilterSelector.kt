@@ -12,15 +12,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.format.TextStyle
@@ -28,11 +33,12 @@ import java.util.Locale
 
 @Composable
 fun DayFilterSelector(
-    selectedDays: List<DayOfWeek>,
+    selectedDays: State<List<DayOfWeek>>,
     modifier: Modifier,
     onDayListChanged: (List<DayOfWeek>) -> Unit
 ) {
     val days = listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
+    val selectedDays = selectedDays.value
     LazyRow(
         modifier = modifier,
         userScrollEnabled = true,
@@ -41,20 +47,27 @@ fun DayFilterSelector(
     ) {
         items(days) { day ->
             val isSelected = selectedDays.contains(day)
-            val color = MaterialTheme.colorScheme.secondary
             val alpha = if (isSelected) 1f else 0.4f
+            val color = MaterialTheme.colorScheme.secondary.copy(alpha = alpha)
             Box(modifier = Modifier
                 .size(40.dp)
                 .background(color, shape = CircleShape)
-                .alpha(alpha)
                 .clickable {
                     val newSelectedDays = selectedDays.toMutableList()
                     if (newSelectedDays.contains(day)) newSelectedDays.remove(day) else newSelectedDays.add(day)
                     onDayListChanged(newSelectedDays)
                 }
             ) {
-                val letter = day.getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault())
-                Text(text = letter, modifier = Modifier.fillMaxSize().padding(4.dp).align(Alignment.Center))
+                val letter = day.getDisplayName(TextStyle.NARROW_STANDALONE, Locale.getDefault()).uppercase(Locale.getDefault())
+                Text(text = letter,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp)
+                        .align(Alignment.Center)
+                        .wrapContentHeight(align = Alignment.CenterVertically)
+                    )
             }
         }
     }
