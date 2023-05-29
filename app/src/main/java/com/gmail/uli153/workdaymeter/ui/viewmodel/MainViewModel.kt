@@ -1,16 +1,12 @@
 package com.gmail.uli153.workdaymeter.ui.viewmodel
 
-import android.content.Context
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
 import com.gmail.uli153.workdaymeter.domain.use_cases.RecordUseCases
 import com.gmail.uli153.workdaymeter.service.ChronometerService
-import com.gmail.uli153.workdaymeter.utils.Formatters
 import com.gmail.uli153.workdaymeter.utils.PreferenceUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,13 +20,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.threeten.bp.DayOfWeek
-import org.threeten.bp.OffsetDateTime
-import java.util.Date
 import javax.inject.Inject
-import kotlin.reflect.KClass
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -44,14 +36,14 @@ class MainViewModel @Inject constructor(
 
     val time: StateFlow<Long> = ChronometerService.time
 
-    private val _filter: MutableStateFlow<HistoryFilter> = MutableStateFlow(HistoryFilter.All)
-    val filter: StateFlow<HistoryFilter> = _filter
+    private val _dateFilter: MutableStateFlow<HistoryFilter> = MutableStateFlow(HistoryFilter.All)
+    val dateFilter: StateFlow<HistoryFilter> = _dateFilter
 
     private val _history: MutableStateFlow<UIState<List<WorkingPeriod>>> = MutableStateFlow(UIState.Loading)
     val history: StateFlow<UIState<List<WorkingPeriod>>> = _history
 
-    private val _selectedDays: MutableStateFlow<List<DayOfWeek>> = MutableStateFlow(DayOfWeek.values().toList())
-    val selectedDays: StateFlow<List<DayOfWeek>> = _selectedDays
+    private val _dayFilter: MutableStateFlow<List<DayOfWeek>> = MutableStateFlow(DayOfWeek.values().toList())
+    val dayFilter: StateFlow<List<DayOfWeek>> = _dayFilter
 
     fun toggleState() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -59,19 +51,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun setHistoryFilter(filter: HistoryFilter) {
+    fun setDateFilter(filter: HistoryFilter) {
         preferenceUtils.saveFilter(filter)
-        _filter.value = filter
+        _dateFilter.value = filter
     }
 
-    fun setSelectedDays(days: List<DayOfWeek>) {
-        _selectedDays.value = days
+    fun setDayFilter(days: List<DayOfWeek>) {
+        _dayFilter.value = days
     }
 
     private var currentHistoryJob: Job? = null
+
+    private data class Filters(val dateFilter: HistoryFilter, val dayFilter: List<DayOfWeek>)
     init {
         viewModelScope.launch(Dispatchers.Main) {
-            filter.collectLatest { filter ->
+            val filters = combine(dateFilter, dayFilter) { filter, selectedDays ->
+                Filters(filter, selectedDays)
+            }
+            filters.collectLatest {
+                val filter = it.dateFilter
+                val selectedDays = it.dayFilter
                 currentHistoryJob?.cancel()
                 val flow: Flow<UIState<List<Record>>> = when(filter) {
                     is HistoryFilter.Range -> recordUseCases.getRecordsInRangeUseCase(filter.from, filter.to)
@@ -84,7 +83,7 @@ class MainViewModel @Inject constructor(
 
                 currentHistoryJob = viewModelScope.launch(Dispatchers.Main) {
                     flow.collectLatest {
-                        _history.value = it.toHistory()
+                        _history.value = it.toHistory(selectedDays)
                     }
                 }
             }
@@ -92,12 +91,12 @@ class MainViewModel @Inject constructor(
 
         val filter = preferenceUtils.getFilter()
         if (filter != null) {
-            _filter.value = filter
+            _dateFilter.value = filter
         }
     }
 }
 
-private fun UIState<List<Record>>.toHistory(): UIState<List<WorkingPeriod>> {
+private fun UIState<List<Record>>.toHistory(days: List<DayOfWeek>): UIState<List<WorkingPeriod>> {
     return when(this) {
         is UIState.Loading -> UIState.Loading
         is UIState.Success -> {
@@ -105,6 +104,7 @@ private fun UIState<List<Record>>.toHistory(): UIState<List<WorkingPeriod>> {
             for (i in 0 until this.data.size step 2) {
                 val start = this.data.getOrNull(i)?.date ?: break
                 val end = this.data.getOrNull(i + 1)?.date ?: break
+                if (!days.contains(start.dayOfWeek)) continue
                 periods.add(WorkingPeriod(start, end))
             }
             UIState.Success(periods.reversed())
