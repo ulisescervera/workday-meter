@@ -36,14 +36,14 @@ class MainViewModel @Inject constructor(
 
     val time: StateFlow<Long> = ChronometerService.time
 
-    private val _dateFilter: MutableStateFlow<HistoryFilter> = MutableStateFlow(HistoryFilter.All)
+    private val _dateFilter: MutableStateFlow<HistoryFilter> = MutableStateFlow(preferenceUtils.getDateFilter() ?: HistoryFilter.All)
     val dateFilter: StateFlow<HistoryFilter> = _dateFilter
 
     private val _history: MutableStateFlow<UIState<List<WorkingPeriod>>> = MutableStateFlow(UIState.Loading)
     val history: StateFlow<UIState<List<WorkingPeriod>>> = _history
 
-    private val _dayFilter: MutableStateFlow<List<DayOfWeek>> = MutableStateFlow(DayOfWeek.values().toList())
-    val dayFilter: StateFlow<List<DayOfWeek>> = _dayFilter
+    private val _dayFilter: MutableStateFlow<Set<DayOfWeek>> = MutableStateFlow(preferenceUtils.getDayFilter())
+    val dayFilter: StateFlow<Set<DayOfWeek>> = _dayFilter
 
     fun toggleState() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -52,17 +52,18 @@ class MainViewModel @Inject constructor(
     }
 
     fun setDateFilter(filter: HistoryFilter) {
-        preferenceUtils.saveFilter(filter)
+        preferenceUtils.saveDateFilter(filter)
         _dateFilter.value = filter
     }
 
-    fun setDayFilter(days: List<DayOfWeek>) {
+    fun setDayFilter(days: Set<DayOfWeek>) {
+        preferenceUtils.saveDayFilter(days)
         _dayFilter.value = days
     }
 
     private var currentHistoryJob: Job? = null
 
-    private data class Filters(val dateFilter: HistoryFilter, val dayFilter: List<DayOfWeek>)
+    private data class Filters(val dateFilter: HistoryFilter, val dayFilter: Set<DayOfWeek>)
     init {
         viewModelScope.launch(Dispatchers.Main) {
             val filters = combine(dateFilter, dayFilter) { filter, selectedDays ->
@@ -88,15 +89,10 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-
-        val filter = preferenceUtils.getFilter()
-        if (filter != null) {
-            _dateFilter.value = filter
-        }
     }
 }
 
-private fun UIState<List<Record>>.toHistory(days: List<DayOfWeek>): UIState<List<WorkingPeriod>> {
+private fun UIState<List<Record>>.toHistory(days: Set<DayOfWeek>): UIState<List<WorkingPeriod>> {
     return when(this) {
         is UIState.Loading -> UIState.Loading
         is UIState.Success -> {

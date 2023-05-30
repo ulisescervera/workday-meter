@@ -33,9 +33,9 @@ import java.util.Locale
 
 @Composable
 fun DayFilterSelector(
-    selectedDays: State<List<DayOfWeek>>,
+    selectedDays: State<Set<DayOfWeek>>,
     modifier: Modifier,
-    onDayListChanged: (List<DayOfWeek>) -> Unit
+    onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
     val days = listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
     val selectedDays = selectedDays.value
@@ -48,7 +48,7 @@ fun DayFilterSelector(
             val alpha = if (isSelected) 1f else 0.4f
             val color = MaterialTheme.colorScheme.secondary.copy(alpha = alpha)
             val onClick = {
-                val newSelectedDays = selectedDays.toMutableList()
+                val newSelectedDays = selectedDays.toMutableSet()
                 if (newSelectedDays.contains(day)) newSelectedDays.remove(day) else newSelectedDays.add(day)
                 onDayListChanged(newSelectedDays)
             }
@@ -78,6 +78,6 @@ fun DayFilterSelector(
 @Composable
 @Preview
 fun DayFilterSelector_Preview() {
-    val selectedDays = remember { mutableStateOf(listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
+    val selectedDays = remember { mutableStateOf(setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
     DayFilterSelector(selectedDays, Modifier, {})
 }

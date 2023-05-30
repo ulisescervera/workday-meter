@@ -38,9 +38,9 @@ fun ChartScreen(
     padding: PaddingValues,
     filter: State<HistoryFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
-    selectedDays: State<List<DayOfWeek>>,
+    selectedDays: State<Set<DayOfWeek>>,
     filterSelectedListener: (HistoryFilter) -> Unit,
-    onDayListChanged: (List<DayOfWeek>) -> Unit
+    onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
     Column(modifier = Modifier
         .fillMaxSize(1f)
@@ -158,6 +158,6 @@ private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
 fun ChartScreen_Preview() {
     val filter = remember { mutableStateOf(HistoryFilter.All) }
     val history = remember { mockWorkingPeriods }
-    val days = remember { mutableStateOf(DayOfWeek.values().toList()) }
+    val days = remember { mutableStateOf(DayOfWeek.values().toSet()) }
     ChartScreen(PaddingValues(0.dp), filter, history, days, {}, {})
 }

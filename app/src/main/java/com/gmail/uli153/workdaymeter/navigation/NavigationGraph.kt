@@ -29,7 +29,7 @@ fun NavigationGraph(
     val filterSelectedListener: (HistoryFilter) -> Unit = {
         mainViewModel.setDateFilter(it)
     }
-    val dayFilterListener: (List<DayOfWeek>) -> Unit = {
+    val dayFilterListener: (Set<DayOfWeek>) -> Unit = {
         mainViewModel.setDayFilter(it)
     }
 

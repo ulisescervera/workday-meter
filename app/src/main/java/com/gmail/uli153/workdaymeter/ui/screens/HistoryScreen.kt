@@ -46,9 +46,9 @@ fun HistoryScreen(
     filter: State<HistoryFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
     time: State<Long>,
-    selectedDays: State<List<DayOfWeek>>,
+    selectedDays: State<Set<DayOfWeek>>,
     filterSelectedListener: (HistoryFilter) -> Unit,
-    onDayListChanged: (List<DayOfWeek>) -> Unit
+    onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
     val items: List<WorkingPeriod> = when(val p = history.value) {
         is UIState.Loading -> emptyList()
@@ -129,6 +129,6 @@ fun HistoryScreen_Preview() {
     val time = remember { mutableStateOf(10L) }
     val state = remember { mutableStateOf(UIState.Success(Record(OffsetDateTime.now(), MeterState.StateIn))) }
     val filter = remember { mutableStateOf(HistoryFilter.All) }
-    val days = remember { mutableStateOf(DayOfWeek.values().toList()) }
+    val days = remember { mutableStateOf(DayOfWeek.values().toSet()) }
     HistoryScreen(PaddingValues(0.dp), state, filter, history, time, days, {}, {})
 }
