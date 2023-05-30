@@ -7,9 +7,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.gmail.uli153.workdaymeter.ui.screens.chart.ChartScreen
 import com.gmail.uli153.workdaymeter.ui.screens.HistoryScreen
 import com.gmail.uli153.workdaymeter.ui.screens.HomeScreen
+import com.gmail.uli153.workdaymeter.ui.screens.chart.ChartScreen
 import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
 import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
 import org.threeten.bp.DayOfWeek

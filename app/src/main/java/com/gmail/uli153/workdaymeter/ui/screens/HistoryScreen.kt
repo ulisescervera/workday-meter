@@ -28,9 +28,9 @@ import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
-import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
 import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
 import com.gmail.uli153.workdaymeter.ui.views.DayFilterSelector
+import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
 import com.gmail.uli153.workdaymeter.utils.AppDimens
 import com.gmail.uli153.workdaymeter.utils.Formatters
 import com.gmail.uli153.workdaymeter.utils.extensions.formattedTime
@@ -73,6 +73,7 @@ fun HistoryScreen(
         item {
             HistoryDropdownMenu(filter, filterSelectedListener)
             DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
+            Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
         }
 
         if (stateDate != null) {
