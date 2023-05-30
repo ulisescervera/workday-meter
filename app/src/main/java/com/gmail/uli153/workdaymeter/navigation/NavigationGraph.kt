@@ -26,6 +26,13 @@ fun NavigationGraph(
     val historyFilter = mainViewModel.dateFilter.collectAsState()
     val selectedDays = mainViewModel.dayFilter.collectAsState()
 
+    val filterSelectedListener: (HistoryFilter) -> Unit = {
+        mainViewModel.setDateFilter(it)
+    }
+    val dayFilterListener: (List<DayOfWeek>) -> Unit = {
+        mainViewModel.setDayFilter(it)
+    }
+
     NavHost(navController, startDestination = NavigationItem.Home.route) {
         composable(NavigationItem.Home.route) {
             HomeScreen(padding, state, time, toggleState = {
@@ -34,18 +41,10 @@ fun NavigationGraph(
         }
 
         composable(NavigationItem.Charts.route) {
-            ChartScreen(padding, historyFilter, history, filterSelectedListener = {
-                mainViewModel.setDateFilter(it)
-            })
+            ChartScreen(padding, historyFilter, history, selectedDays, filterSelectedListener, dayFilterListener)
         }
 
         composable(NavigationItem.History.route) {
-            val filterSelectedListener: (HistoryFilter) -> Unit =  {
-                mainViewModel.setDateFilter(it)
-            }
-            val dayFilterListener: (List<DayOfWeek>) -> Unit = {
-                mainViewModel.setDayFilter(it)
-            }
             HistoryScreen(padding, state, historyFilter, history, time, selectedDays, filterSelectedListener, dayFilterListener)
         }
     }

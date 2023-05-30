@@ -1,14 +1,13 @@
 package com.gmail.uli153.workdaymeter.ui.screens.chart
 
-import android.content.Context
-import android.graphics.Canvas
-import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -17,43 +16,44 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.Description
-import com.github.mikephil.charting.components.MarkerView
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.highlight.Highlight
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener
-import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
 import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.views.DayFilterSelector
 import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
+import com.gmail.uli153.workdaymeter.utils.AppDimens
 import com.gmail.uli153.workdaymeter.utils.mockWorkingPeriods
+import org.threeten.bp.DayOfWeek
 
 @Composable
 fun ChartScreen(
     padding: PaddingValues,
     filter: State<HistoryFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
-    filterSelectedListener: (HistoryFilter) -> Unit
+    selectedDays: State<List<DayOfWeek>>,
+    filterSelectedListener: (HistoryFilter) -> Unit,
+    onDayListChanged: (List<DayOfWeek>) -> Unit
 ) {
     Column(modifier = Modifier
         .fillMaxSize(1f)
         .background(MaterialTheme.colorScheme.background)
         .padding(bottom = padding.calculateBottomPadding() + 20.dp)
     ) {
-        Box(modifier = Modifier
+        Column(modifier = Modifier
             .fillMaxWidth(1f)
             .padding(20.dp)
         ) {
             HistoryDropdownMenu(filter, filterSelectedListener)
+            DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
+            Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
         }
         WorkingChart(history)
     }
@@ -158,5 +158,6 @@ private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
 fun ChartScreen_Preview() {
     val filter = remember { mutableStateOf(HistoryFilter.All) }
     val history = remember { mockWorkingPeriods }
-    ChartScreen(PaddingValues(0.dp), filter, history, filterSelectedListener = {})
+    val days = remember { mutableStateOf(DayOfWeek.values().toList()) }
+    ChartScreen(PaddingValues(0.dp), filter, history, days, {}, {})
 }

@@ -7,14 +7,14 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
+import android.app.Service
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import android.app.Service
-import android.os.IBinder
 import com.gmail.uli153.workdaymeter.MainActivity
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
