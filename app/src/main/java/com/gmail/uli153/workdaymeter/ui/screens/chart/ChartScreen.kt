@@ -1,7 +1,6 @@
 package com.gmail.uli153.workdaymeter.ui.screens.chart
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +25,7 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
-import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.viewmodel.DateFilter
 import com.gmail.uli153.workdaymeter.ui.views.DayFilterSelector
 import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
 import com.gmail.uli153.workdaymeter.utils.AppDimens
@@ -36,10 +35,10 @@ import org.threeten.bp.DayOfWeek
 @Composable
 fun ChartScreen(
     padding: PaddingValues,
-    filter: State<HistoryFilter>,
+    filter: State<DateFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
     selectedDays: State<Set<DayOfWeek>>,
-    filterSelectedListener: (HistoryFilter) -> Unit,
+    filterSelectedListener: (DateFilter) -> Unit,
     onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
     Column(modifier = Modifier
@@ -143,9 +142,11 @@ private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
             val data = BarData(dataSet)
             data.barWidth = 0.40f
             barChart.data = data
-            barChart.setVisibleXRangeMaximum(10f)
-            barChart.xAxis.axisMinimum = -data.barWidth / 2f
-            barChart.xAxis.axisMaximum = data.entryCount - data.barWidth / 2f
+            barChart.xAxis.setLabelCount(3, false)
+//            barChart.setVisibleXRangeMaximum(10f)
+            barChart.setVisibleXRange(1f, 10f)
+//            barChart.xAxis.axisMinimum = -data.barWidth / 2f
+//            barChart.xAxis.axisMaximum = data.entryCount - data.barWidth / 2f
             barChart.animateY(500)
             barChart.notifyDataSetChanged()
             barChart.invalidate()
@@ -156,7 +157,7 @@ private fun WorkingChart(history: State<UIState<List<WorkingPeriod>>>) {
 @Preview
 @Composable
 fun ChartScreen_Preview() {
-    val filter = remember { mutableStateOf(HistoryFilter.All) }
+    val filter = remember { mutableStateOf(DateFilter.All) }
     val history = remember { mockWorkingPeriods }
     val days = remember { mutableStateOf(DayOfWeek.values().toSet()) }
     ChartScreen(PaddingValues(0.dp), filter, history, days, {}, {})

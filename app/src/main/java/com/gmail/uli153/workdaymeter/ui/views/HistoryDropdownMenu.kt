@@ -23,19 +23,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.viewmodel.DateFilter
 import com.gmail.uli153.workdaymeter.utils.Formatters
 import org.threeten.bp.OffsetDateTime
 
 @Composable
 fun HistoryDropdownMenu(
-    selectedItem: State<HistoryFilter>,
-    itemSelectedListener: (HistoryFilter) -> Unit
+    selectedItem: State<DateFilter>,
+    itemSelectedListener: (DateFilter) -> Unit
 ) {
     val context = LocalContext.current
     val expanded = remember { mutableStateOf(false) }
-    val items = remember { mutableStateOf(HistoryFilter.values) }
-    val range = selectedItem.value as? HistoryFilter.Range
+    val items = remember { mutableStateOf(DateFilter.values) }
+    val range = selectedItem.value as? DateFilter.Range
     val from = range?.from
     val to = range?.to
 

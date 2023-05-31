@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.gmail.uli153.workdaymeter.ui.screens.HistoryScreen
 import com.gmail.uli153.workdaymeter.ui.screens.HomeScreen
 import com.gmail.uli153.workdaymeter.ui.screens.chart.ChartScreen
-import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.viewmodel.DateFilter
 import com.gmail.uli153.workdaymeter.ui.viewmodel.MainViewModel
 import org.threeten.bp.DayOfWeek
 
@@ -26,7 +26,7 @@ fun NavigationGraph(
     val historyFilter = mainViewModel.dateFilter.collectAsState()
     val selectedDays = mainViewModel.dayFilter.collectAsState()
 
-    val filterSelectedListener: (HistoryFilter) -> Unit = {
+    val filterSelectedListener: (DateFilter) -> Unit = {
         mainViewModel.setDateFilter(it)
     }
     val dayFilterListener: (Set<DayOfWeek>) -> Unit = {

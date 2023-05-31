@@ -2,7 +2,7 @@ package com.gmail.uli153.workdaymeter.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.gmail.uli153.workdaymeter.ui.viewmodel.HistoryFilter
+import com.gmail.uli153.workdaymeter.ui.viewmodel.DateFilter
 import org.threeten.bp.DayOfWeek
 
 class PreferenceUtils(val context: Context) {
@@ -18,14 +18,14 @@ class PreferenceUtils(val context: Context) {
         return context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE)
     }
 
-    fun saveDateFilter(filter: HistoryFilter) {
+    fun saveDateFilter(filter: DateFilter) {
         saveString(PreferenceKeys.DATE_FILTER, filter.toPreference())
     }
 
-    fun getDateFilter(): HistoryFilter? {
+    fun getDateFilter(): DateFilter? {
         val text = getString(PreferenceKeys.DATE_FILTER)?.takeIf { it.isNotBlank() }
         return if (text != null) {
-            HistoryFilter.createFromPreference(text)
+            DateFilter.createFromPreference(text)
         } else null
     }
 
