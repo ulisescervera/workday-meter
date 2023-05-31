@@ -44,7 +44,9 @@ fun ChartScreen(
     Column(modifier = Modifier
         .fillMaxSize(1f)
         .background(MaterialTheme.colorScheme.background)
-        .padding(bottom = padding.calculateBottomPadding() + 20.dp)
+        .padding(
+            top = padding.calculateTopPadding(),
+            bottom = padding.calculateBottomPadding() + 20.dp)
     ) {
         Column(modifier = Modifier
             .fillMaxWidth(1f)

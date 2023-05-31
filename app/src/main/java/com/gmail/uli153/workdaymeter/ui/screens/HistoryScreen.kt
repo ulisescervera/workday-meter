@@ -60,7 +60,7 @@ fun HistoryScreen(
     }
     val listPadding = PaddingValues(
         start = 20.dp,
-        top = 20.dp,
+        top = padding.calculateTopPadding() + 20.dp,
         end = 20.dp,
         bottom = padding.calculateBottomPadding() + 20.dp
     )
