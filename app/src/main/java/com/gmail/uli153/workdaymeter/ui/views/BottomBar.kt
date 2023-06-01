@@ -28,15 +28,12 @@ import com.gmail.uli153.workdaymeter.utils.AppDimens
 fun BottomBar(
     navController: NavHostController
 ) {
-    val items = listOf(
-        NavigationItem.Home,
-        NavigationItem.Charts,
-        NavigationItem.History
-    )
+    val items = NavigationItem.values()
+
     Box(modifier = Modifier
         .fillMaxWidth()
-        .padding(start = AppDimens.bottomNavigationMarginHorizontal,
-            end = AppDimens.bottomNavigationMarginHorizontal,
+        .padding(start = AppDimens.navigationBarHorizontalMargin,
+            end = AppDimens.navigationBarHorizontalMargin,
             bottom = AppDimens.bottomNavigationMarginBottom
         )
     ) {
@@ -45,8 +42,8 @@ fun BottomBar(
             tonalElevation = 4.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(AppDimens.bottomNavigationHeight)
-                .clip(RoundedCornerShape(AppDimens.bottomNavigationHeight / 2))
+                .height(AppDimens.navigationBarHeight)
+                .clip(RoundedCornerShape(AppDimens.navigationBarHeight / 2))
         ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route

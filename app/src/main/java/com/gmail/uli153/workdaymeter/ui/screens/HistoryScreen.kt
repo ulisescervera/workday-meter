@@ -1,6 +1,7 @@
 package com.gmail.uli153.workdaymeter.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,11 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
+import com.gmail.uli153.workdaymeter.navigation.NavigationItem
 import com.gmail.uli153.workdaymeter.ui.viewmodel.DateFilter
 import com.gmail.uli153.workdaymeter.ui.views.DayFilterSelector
 import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
@@ -47,6 +51,8 @@ fun HistoryScreen(
     history: State<UIState<List<WorkingPeriod>>>,
     time: State<Long>,
     selectedDays: State<Set<DayOfWeek>>,
+    isFilterVisible: State<Boolean>,
+    navigateHomeListener: () -> Unit,
     filterSelectedListener: (DateFilter) -> Unit,
     onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
@@ -64,21 +70,24 @@ fun HistoryScreen(
         end = 20.dp,
         bottom = padding.calculateBottomPadding() + 20.dp
     )
+
     LazyColumn(
         contentPadding = listPadding,
         modifier = Modifier
             .fillMaxSize(1f)
             .background(MaterialTheme.colorScheme.background)
     ) {
-        item {
-            HistoryDropdownMenu(filter, filterSelectedListener)
-            DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
-            Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+        if (isFilterVisible.value) {
+            item {
+                HistoryDropdownMenu(filter, filterSelectedListener)
+                DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
+                Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+            }
         }
 
         if (stateDate != null) {
             item {
-                WorkingPeriodBaseRow(formatter, stateDate, null, time.value)
+                WorkingPeriodBaseRow(formatter, stateDate, null, time.value, navigateHomeListener)
                 Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
             }
         }
@@ -94,12 +103,13 @@ private fun WorkingPeriodBaseRow(
     formatter: DateTimeFormatter,
     start: OffsetDateTime,
     end: OffsetDateTime?,
-    duration: Long
+    duration: Long,
+    onClick: () -> Unit
 ){
     val endText = end?.let { formatter.format(end) } ?: stringResource(R.string.waiting_clock_out)
 
     ElevatedCard(shape = RoundedCornerShape(AppDimens.rowCornerRadius),
-        modifier = Modifier.fillMaxWidth(1f)
+        modifier = Modifier.fillMaxWidth(1f).clickable(onClick = onClick)
     ) {
         Row(modifier = Modifier
             .fillMaxWidth(1f)
@@ -119,7 +129,7 @@ private fun WorkingPeriodBaseRow(
 
 @Composable
 private fun WorkingPeriodRow(formatter: DateTimeFormatter, period: WorkingPeriod) {
-    WorkingPeriodBaseRow(formatter, period.start, period.end, period.duration)
+    WorkingPeriodBaseRow(formatter, period.start, period.end, period.duration, {})
 }
 
 @Preview
@@ -130,5 +140,6 @@ fun HistoryScreen_Preview() {
     val state = remember { mutableStateOf(UIState.Success(Record(OffsetDateTime.now(), MeterState.StateIn))) }
     val filter = remember { mutableStateOf(DateFilter.All) }
     val days = remember { mutableStateOf(DayOfWeek.values().toSet()) }
-    HistoryScreen(PaddingValues(0.dp), state, filter, history, time, days, {}, {})
+    val isFilterVisible = remember { mutableStateOf(true) }
+    HistoryScreen(PaddingValues(0.dp), state, filter, history, time, days, isFilterVisible, {}, {}, {})
 }

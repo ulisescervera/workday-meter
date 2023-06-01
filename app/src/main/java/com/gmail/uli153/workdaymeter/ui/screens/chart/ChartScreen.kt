@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ fun ChartScreen(
     filter: State<DateFilter>,
     history: State<UIState<List<WorkingPeriod>>>,
     selectedDays: State<Set<DayOfWeek>>,
+    isFilterVisible: State<Boolean>,
     filterSelectedListener: (DateFilter) -> Unit,
     onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
@@ -52,9 +54,11 @@ fun ChartScreen(
             .fillMaxWidth(1f)
             .padding(20.dp)
         ) {
-            HistoryDropdownMenu(filter, filterSelectedListener)
-            DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
-            Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+            if (isFilterVisible.value) {
+                HistoryDropdownMenu(filter, filterSelectedListener)
+                DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
+                Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+            }
         }
         WorkingChart(history)
     }
@@ -162,5 +166,6 @@ fun ChartScreen_Preview() {
     val filter = remember { mutableStateOf(DateFilter.All) }
     val history = remember { mockWorkingPeriods }
     val days = remember { mutableStateOf(DayOfWeek.values().toSet()) }
-    ChartScreen(PaddingValues(0.dp), filter, history, days, {}, {})
+    val isFilterVisible = remember { mutableStateOf(true) }
+    ChartScreen(PaddingValues(0.dp), filter, history, days, isFilterVisible, {}, {})
 }

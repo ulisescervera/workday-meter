@@ -37,7 +37,7 @@ class MainViewModel @Inject constructor(
 
     val time: StateFlow<Long> = ChronometerService.time
 
-    private val _dateFilter: MutableStateFlow<DateFilter> = MutableStateFlow(preferenceUtils.getDateFilter() ?: DateFilter.All)
+    private val _dateFilter: MutableStateFlow<DateFilter> = MutableStateFlow(DateFilter.All)
     val dateFilter: StateFlow<DateFilter> = _dateFilter
 
     private val _history: MutableStateFlow<UIState<List<WorkingPeriod>>> = MutableStateFlow(UIState.Loading)
@@ -76,6 +76,11 @@ class MainViewModel @Inject constructor(
     }
 
     init {
+        val savedDateFilter = preferenceUtils.getDateFilter()
+        if (savedDateFilter != null && savedDateFilter != dateFilter.value) {
+            setDateFilter(savedDateFilter)
+        }
+
         viewModelScope.launch(Dispatchers.Main) {
             val filters = combine(dateFilter, dayFilter) { filter, selectedDays ->
                 Filters(filter, selectedDays)

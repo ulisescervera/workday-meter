@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
@@ -22,14 +24,15 @@ fun MainScreen(
     mainViewModel: MainViewModel = viewModel()
 ) {
     val navController = rememberNavController()
+    val isFilterVisible = remember { mutableStateOf(true) }
     Scaffold(
-        topBar = { TopBar(navController) },
+        topBar = { TopBar(navController, isFilterVisible) },
         bottomBar = { BottomBar(navController) },
     ) { padding ->
         Box(modifier = Modifier
             .fillMaxWidth(1f)
         ) {
-            NavigationGraph(navController, padding, mainViewModel)
+            NavigationGraph(navController, padding, mainViewModel, isFilterVisible)
         }
     }
 }
