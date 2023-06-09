@@ -3,7 +3,7 @@
  */
 package com.gmail.uli153.workdaymeter.ui.views
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,16 +22,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
@@ -62,33 +57,44 @@ fun TopBar(navController: NavHostController, isFilterVisible: MutableState<Boole
     ) {
         TopAppBar(
             title = {
-                Box(modifier = Modifier.fillMaxSize().wrapContentSize(align = Alignment.Center)) {
+                ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+                    val (text, filterIcon) = createRefs()
+                    val iconWidth = 32.dp
+                    val iconMargin = 8.dp
                     Text(
                         text = title,
                         color = MaterialTheme.colorScheme.onPrimary,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.constrainAs(text) {
+                            start.linkTo(parent.start, iconWidth + iconMargin)
+                            top.linkTo(parent.top)
+                            end.linkTo(parent.end, iconWidth + iconMargin)
+                            bottom.linkTo(parent.bottom)
+                            width = Dimension.fillToConstraints
+                        }
                     )
-                }
-            },
-            actions = {
-                if (showFilterButton) {
-                    Box(modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(8.dp)
+                    AnimatedVisibility(visible = showFilterButton,
+                        modifier = Modifier.padding(iconMargin)
                         .clickable(onClick = onFilterButtonClicked)
+                        .constrainAs(filterIcon) {
+                            top.linkTo(parent.top)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(parent.bottom)
+                            height = Dimension.fillToConstraints
+                        }
                     ) {
                         Icon(painter = rememberAsyncImagePainter(R.drawable.ic_filter),
                             contentDescription = "",
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.fillMaxHeight().width(32.dp)
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(iconWidth)
                         )
                     }
                 }
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier
                 .fillMaxWidth()

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,17 +37,16 @@ fun DayFilterSelector(
     onDayListChanged: (Set<DayOfWeek>) -> Unit
 ) {
     val days = listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
-    val selectedDays = selectedDays.value
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    val selected = selectedDays.value
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
     ) {
         for (day in days) {
-            val isSelected = selectedDays.contains(day)
+            val isSelected = selected.contains(day)
             val alpha = if (isSelected) 1f else 0.4f
             val color = MaterialTheme.colorScheme.secondary.copy(alpha = alpha)
             val onClick = {
-                val newSelectedDays = selectedDays.toMutableSet()
+                val newSelectedDays = selected.toMutableSet()
                 if (newSelectedDays.contains(day)) newSelectedDays.remove(day) else newSelectedDays.add(day)
                 onDayListChanged(newSelectedDays)
             }
@@ -79,5 +77,5 @@ fun DayFilterSelector(
 @Preview
 fun DayFilterSelector_Preview() {
     val selectedDays = remember { mutableStateOf(setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
-    DayFilterSelector(selectedDays, Modifier, {})
+    DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), {})
 }

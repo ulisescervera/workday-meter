@@ -17,7 +17,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,13 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
 import com.gmail.uli153.workdaymeter.domain.models.MeterState
 import com.gmail.uli153.workdaymeter.domain.models.Record
 import com.gmail.uli153.workdaymeter.domain.models.WorkingPeriod
-import com.gmail.uli153.workdaymeter.navigation.NavigationItem
 import com.gmail.uli153.workdaymeter.ui.viewmodel.DateFilter
 import com.gmail.uli153.workdaymeter.ui.views.DayFilterSelector
 import com.gmail.uli153.workdaymeter.ui.views.HistoryDropdownMenu
@@ -71,29 +70,42 @@ fun HistoryScreen(
         bottom = padding.calculateBottomPadding() + 20.dp
     )
 
-    LazyColumn(
-        contentPadding = listPadding,
-        modifier = Modifier
-            .fillMaxSize(1f)
-            .background(MaterialTheme.colorScheme.background)
+    ConstraintLayout(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)
     ) {
-        if (isFilterVisible.value) {
-            item {
-                HistoryDropdownMenu(filter, filterSelectedListener)
-                DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
-                Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+        val (listRef, filterRef) = createRefs()
+        LazyColumn(
+            contentPadding = listPadding,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .constrainAs(listRef) {
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(parent.bottom)
+                    width = Dimension.fillToConstraints
+                    height = Dimension.fillToConstraints
+                }
+        ) {
+            if (isFilterVisible.value) {
+                item {
+                    HistoryDropdownMenu(filter, filterSelectedListener)
+                    DayFilterSelector(selectedDays, Modifier.fillMaxWidth(), onDayListChanged)
+                    Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+                }
             }
-        }
 
-        if (stateDate != null) {
-            item {
-                WorkingPeriodBaseRow(formatter, stateDate, null, time.value, navigateHomeListener)
+            if (stateDate != null) {
+                item {
+                    WorkingPeriodBaseRow(formatter, stateDate, null, time.value, navigateHomeListener)
+                    Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
+                }
+            }
+            items(items) {
+                WorkingPeriodRow(formatter, it)
                 Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
             }
-        }
-        items(items) {
-            WorkingPeriodRow(formatter, it)
-            Spacer(modifier = Modifier.height(AppDimens.rowVSpace))
         }
     }
 }
@@ -109,7 +121,9 @@ private fun WorkingPeriodBaseRow(
     val endText = end?.let { formatter.format(end) } ?: stringResource(R.string.waiting_clock_out)
 
     ElevatedCard(shape = RoundedCornerShape(AppDimens.rowCornerRadius),
-        modifier = Modifier.fillMaxWidth(1f).clickable(onClick = onClick)
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .clickable(onClick = onClick)
     ) {
         Row(modifier = Modifier
             .fillMaxWidth(1f)
