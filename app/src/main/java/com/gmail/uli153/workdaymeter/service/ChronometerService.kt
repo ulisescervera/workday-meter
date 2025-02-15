@@ -3,6 +3,8 @@
  */
 package com.gmail.uli153.workdaymeter.service
 
+import android.Manifest
+import android.Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
@@ -11,10 +13,13 @@ import android.app.Service
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import com.gmail.uli153.workdaymeter.MainActivity
 import com.gmail.uli153.workdaymeter.R
 import com.gmail.uli153.workdaymeter.domain.UIState
@@ -165,7 +170,7 @@ class ChronometerService: Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(manager)
         }
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+        ServiceCompat.startForeground(this, NOTIFICATION_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
     }
 
     private fun startTimer() {
